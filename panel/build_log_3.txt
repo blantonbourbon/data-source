@@ -1,0 +1,53 @@
+> Task :clean
+> Task :compileJava
+> Task :processResources
+> Task :classes
+
+> Task :compileTestJava FAILED
+F:\coding\workspace\core\src\test\java\com\data\service\core\TradeMetricTest.java:8: 错误: 程序包com.fasterxml.jackson.databind不存在
+import com.fasterxml.jackson.databind.ObjectMapper;
+                                     ^
+F:\coding\workspace\core\src\test\java\com\data\service\core\TradeMetricTest.java:12: 错误: 程序包org.springframework.boot.test.autoconfigure.web.servlet不存在
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+                                                              ^
+F:\coding\workspace\core\src\test\java\com\data\service\core\TradeMetricTest.java:25: 错误: 找不到符号
+@AutoConfigureMockMvc
+ ^
+  符号: 类 AutoConfigureMockMvc
+F:\coding\workspace\core\src\test\java\com\data\service\core\TradeMetricTest.java:35: 错误: 找不到符号
+    private ObjectMapper objectMapper;
+            ^
+  符号:   类 ObjectMapper
+  位置: 类 TradeMetricTest
+4 个错误
+
+[Incubating] Problems report is available at: file:///F:/coding/workspace/core/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':compileTestJava'.
+> Compilation failed; see the compiler output below.
+  F:\coding\workspace\core\src\test\java\com\data\service\core\TradeMetricTest.java:35: 错误: 找不到符号
+      private ObjectMapper objectMapper;
+              ^
+    符号:   类 ObjectMapper
+    位置: 类 TradeMetricTest
+  F:\coding\workspace\core\src\test\java\com\data\service\core\TradeMetricTest.java:25: 错误: 找不到符号
+  @AutoConfigureMockMvc
+   ^
+    符号: 类 AutoConfigureMockMvc
+  F:\coding\workspace\core\src\test\java\com\data\service\core\TradeMetricTest.java:8: 错误: 程序包com.fasterxml.jackson.databind不存在
+  import com.fasterxml.jackson.databind.ObjectMapper;
+                                       ^
+  F:\coding\workspace\core\src\test\java\com\data\service\core\TradeMetricTest.java:12: 错误: 程序包org.springframework.boot.test.autoconfigure.web.servlet不存在
+  import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+                                                                ^
+  4 个错误
+
+* Try:
+> Check your code and dependencies to fix the compilation error(s)
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+
+BUILD FAILED in 2s
+4 actionable tasks: 4 executed

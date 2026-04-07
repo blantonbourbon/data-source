@@ -1,0 +1,135 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'org.yaml:snakeyaml:2.0'
+    }
+}
+
+import org.yaml.snakeyaml.Yaml
+import groovy.text.SimpleTemplateEngine
+
+task generateScaffold {
+    description = 'Generates Java Entity, Repository, and Mapper from a YAML configuration using Groovy Templates.'
+    group = 'source generation'
+
+    def configFile = file('src/main/resources/entity-model.yaml')
+    def outputDir = file('src/main/java')
+    def templatesDir = file('gradle/templates')
+
+    inputs.file(configFile)
+    inputs.dir(templatesDir)
+
+    doLast {
+        if (!configFile.exists()) {
+            logger.error("Configuration file not found: ${configFile}")
+            return
+        }
+
+        def config = new Yaml().load(configFile.newInputStream())
+        def modelPackage = config.package
+        def basePackage = modelPackage.endsWith('.model') ? modelPackage.substring(0, modelPackage.length() - 6) : modelPackage
+        
+        def packages = [
+            model: modelPackage,
+            repository: "${basePackage}.repository"
+        ]
+
+        // Create directories
+        packages.each { key, pkg ->
+            new File(outputDir, pkg.replace('.', '/')).mkdirs()
+        }
+
+        def engine = new SimpleTemplateEngine()
+        
+        // Define templates
+        def templates = [
+            entity: engine.createTemplate(new File(templatesDir, 'entity.groovy')),
+            model: engine.createTemplate(new File(templatesDir, 'model.groovy')),
+            mapperBase: engine.createTemplate(new File(templatesDir, 'mapper_base.groovy')),
+            mapper: engine.createTemplate(new File(templatesDir, 'mapper.groovy')),
+            repository: engine.createTemplate(new File(templatesDir, 'repository.groovy'))
+        ]
+
+        config.entities.each { entity ->
+            println "Scaffolding ${entity.name}..."
+
+            // Pre-process attributes to identify source
+            entity.attributes.each { attr ->
+                attr.isCalculated = (attr.source == 'calculated')
+                attr.capitalizedName = attr.name.capitalize()
+            }
+
+            def dbAttributes = entity.attributes.findAll { !it.isCalculated }
+            def allAttributes = entity.attributes
+
+            // 1. Generate Domain Model (POJO) using ALL attributes
+            def binding = [
+                packageName: packages.model,
+                className: entity.name,
+                attributes: allAttributes
+            ]
+            writeFile(packages.model, entity.name, templates.model, binding, outputDir, true)
+
+            // 2. Generate JPA Entity (DB Only) using DB attributes
+            // Class name suffixed with 'Entity' to distinguish
+            binding = [
+                packageName: packages.model,
+                className: "${entity.name}Entity",
+                tableName: entity.tableName ?: entity.name.toLowerCase(),
+                attributes: dbAttributes
+            ]
+            writeFile(packages.model, "${entity.name}Entity", templates.entity, binding, outputDir, true)
+
+            // 3. Generate Mapper Base
+            def mapperPackage = "${basePackage}.mapper"
+            new File(outputDir, mapperPackage.replace('.', '/')).mkdirs()
+            
+            binding = [
+                packageName: mapperPackage,
+                className: "${entity.name}MapperBase",
+                mapperClass: "${entity.name}Mapper",
+                modelPackage: packages.model,
+                modelClass: entity.name,
+                entityPackage: packages.model,
+                entityClass: "${entity.name}Entity",
+                attributes: allAttributes
+            ]
+            writeFile(mapperPackage, "${entity.name}MapperBase", templates.mapperBase, binding, outputDir, true)
+
+            // 4. Generate Mapper Implementation (Only if not exists)
+            binding = [
+                packageName: mapperPackage,
+                className: "${entity.name}Mapper",
+                baseClassName: "${entity.name}MapperBase",
+                entityPackage: packages.model,
+                entityClass: "${entity.name}Entity",
+                attributes: allAttributes
+            ]
+            writeFile(mapperPackage, "${entity.name}Mapper", templates.mapper, binding, outputDir, false)
+
+            // 5. Generate Repository (Uses Entity)
+            binding = [
+                packageName: packages.repository,
+                className: "${entity.name}Repository",
+                entityPackage: packages.model,
+                entityName: entity.name
+            ]
+            writeFile(packages.repository, "${entity.name}Repository", templates.repository, binding, outputDir, true)
+        }
+    }
+}
+
+def writeFile(String packageName, String className, groovy.text.Template template, Map binding, File outputDir, boolean overwrite) {
+    def packagePath = packageName.replace('.', '/')
+    def file = new File(outputDir, "${packagePath}/${className}.java")
+    if (overwrite || !file.exists()) {
+        file.write(template.make(binding).toString())
+    } else {
+        println "Skipping ${file.path} (already exists)"
+    }
+}
+
+compileJava.dependsOn generateScaffold
+

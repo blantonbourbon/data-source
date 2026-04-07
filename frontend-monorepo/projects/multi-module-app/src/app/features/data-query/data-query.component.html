@@ -1,0 +1,77 @@
+<div class="query-container">
+  <div class="header-section">
+    <h2>Data Query Example</h2>
+    <p>Use the form below to filter trade data.</p>
+  </div>
+
+  <!-- Filter Form -->
+  <div class="filter-card">
+    <app-query-builder
+      *ngIf="config && config.filterFields"
+      [availableFields]="config.filterFields"
+      (querySubmit)="onQuerySubmit($event)"
+    >
+    </app-query-builder>
+  </div>
+
+  <!-- Custom Tab Navigation -->
+  <div class="custom-tab-nav" *ngIf="queryTabs.length > 0">
+    <div
+      class="tab-item"
+      *ngFor="let tab of queryTabs; let i = index"
+      [class.active]="selectedTabIndex === i"
+      (click)="selectTab(i)"
+    >
+      <span class="tab-label-text">{{ tab.title }}</span>
+      <button class="tab-close-btn" (click)="closeTab(i, $event)" title="Close tab">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <div class="empty-state" *ngIf="queryTabs.length === 0">
+    <mat-icon>search</mat-icon>
+    <p>No query results yet. Execute a search to view data.</p>
+  </div>
+
+  <!-- Tab Content -->
+  <div class="tab-content-container" *ngIf="queryTabs[selectedTabIndex]">
+    <div class="tab-filter-bar">
+      <mat-icon class="filter-icon">filter_list</mat-icon>
+      <input type="text" placeholder="Filter this query result..." (keyup)="applyTabFilter($event, selectedTabIndex)" />
+    </div>
+
+    <div class="table-container">
+      <!-- Hidden context menu trigger button mapped to the actual mat-menu -->
+      <div
+        style="visibility: hidden; position: fixed"
+        [style.left]="contextMenuPosition.x"
+        [style.top]="contextMenuPosition.y"
+        [matMenuTriggerFor]="contextMenu"
+        #contextMenuTrigger="matMenuTrigger"
+      ></div>
+
+      <mat-menu #contextMenu="matMenu">
+        <ng-template matMenuContent>
+          <button mat-menu-item (click)="openAggregateDialog()">
+            <mat-icon>functions</mat-icon>
+            <span>Aggregate By Group (Selected/All)</span>
+          </button>
+        </ng-template>
+      </mat-menu>
+
+      <ag-grid-angular
+        class="ag-theme-material"
+        style="width: 100%; flex: 1; min-height: 300px"
+        [rowData]="queryTabs[selectedTabIndex].dataSource"
+        [columnDefs]="queryTabs[selectedTabIndex].colDefs || colDefs"
+        [defaultColDef]="defaultColDef"
+        (gridReady)="onGridReady($event, selectedTabIndex)"
+        (cellContextMenu)="onContextMenu($event)"
+        [preventDefaultOnContextMenu]="true"
+        rowSelection="multiple"
+      >
+      </ag-grid-angular>
+    </div>
+  </div>
+</div>

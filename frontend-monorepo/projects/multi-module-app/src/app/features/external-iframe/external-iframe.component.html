@@ -1,0 +1,10 @@
+<div class="iframe-container">
+  <div class="header">
+    <h2>External App Integration</h2>
+    <p>This tab renders an external application inside an iframe.</p>
+  </div>
+
+  <div class="iframe-wrapper">
+    <iframe *ngIf="iframeUrl" [src]="iframeUrl" width="100%" height="100%" frameborder="0"></iframe>
+  </div>
+</div>

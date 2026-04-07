@@ -1,0 +1,21 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+:host ::ng-deep .ag-header-cell-comp-wrapper {
+  width: 100%;
+}
+
+:host ::ng-deep .ag-header-cell-label {
+  align-items: center;
+}
+
+:host ::ng-deep .ag-header-cell-text {
+  white-space: normal;
+  overflow: visible;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  text-overflow: unset;
+  line-height: 1.3;
+}

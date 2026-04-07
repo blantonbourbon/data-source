@@ -1,0 +1,20 @@
+<section class="auth-page" aria-labelledby="login-title">
+  <div class="auth-card">
+    <p class="eyebrow">Company Access</p>
+    <h1 id="login-title">Sign in to continue</h1>
+    <p class="summary">
+      Authentication now runs through the backend session boundary. After sign-in, the app reloads your user profile and
+      module permissions from the server.
+    </p>
+
+    @if (errorMessage(); as error) {
+      <p class="auth-error" role="alert">{{ error }}</p>
+    }
+
+    <button type="button" class="primary-action" [disabled]="isStartingLogin()" (click)="signIn()">
+      {{ isStartingLogin() ? 'Redirecting...' : 'Continue to sign in' }}
+    </button>
+
+    <p class="note">The backend will return you to the requested route after the sign-in flow completes.</p>
+  </div>
+</section>

@@ -1,0 +1,7 @@
+frontend-monorepo/node_modules/
+frontend-monorepo/dist/
+frontend-monorepo/.angular/
+panel/build/
+panel/.gradle/
+panel/.worktrees/
+panel/.claude/worktrees/

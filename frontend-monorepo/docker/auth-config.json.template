@@ -1,0 +1,42 @@
+{
+  "issuer": "${AUTH_ISSUER}",
+  "discoveryUrl": "${AUTH_DISCOVERY_URL}",
+  "clientId": "${AUTH_CLIENT_ID}",
+  "redirectUri": "${AUTH_REDIRECT_URI}",
+  "postLogoutRedirectUri": "${AUTH_POST_LOGOUT_REDIRECT_URI}",
+  "scope": "${AUTH_SCOPE}",
+  "claimsSource": "both",
+  "groupClaim": [
+    "groups",
+    "group"
+  ],
+  "entitlementClaim": [
+    "entitlements",
+    "entitlement"
+  ],
+  "permissionClaim": [
+    "permissions",
+    "permission",
+    "authorities"
+  ],
+  "usernameClaim": [
+    "preferred_username",
+    "username",
+    "sub"
+  ],
+  "displayNameClaim": [
+    "name",
+    "preferred_username"
+  ],
+  "emailClaim": [
+    "email"
+  ],
+  "idClaim": [
+    "sub"
+  ],
+  "userContextEndpoint": "${AUTH_USER_CONTEXT_ENDPOINT}",
+  "requireUserContext": ${AUTH_REQUIRE_USER_CONTEXT},
+  "storage": "localStorage",
+  "defaultReturnUrl": "/",
+  "clockSkewInSeconds": 60
+}

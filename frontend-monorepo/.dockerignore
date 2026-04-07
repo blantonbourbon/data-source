@@ -1,0 +1,7 @@
+.git
+.angular
+.vscode
+node_modules
+dist
+coverage
+npm-debug.log*

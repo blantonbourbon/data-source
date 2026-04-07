@@ -1,0 +1,31 @@
+> Task :clean
+> Task :compileJava
+> Task :processResources
+> Task :classes
+
+> Task :compileTestJava
+F:\coding\workspace\core\src\test\java\com\data\service\core\TradeIntegrationTest.java:22: 错误: 不兼容的类型: List<TradeEntity>无法转换为List<Trade>
+        List<Trade> trades = tradeRepository.findAll();
+                                                    ^
+1 个错误
+
+> Task :compileTestJava FAILED
+
+[Incubating] Problems report is available at: file:///F:/coding/workspace/core/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':compileTestJava'.
+> Compilation failed; see the compiler output below.
+  F:\coding\workspace\core\src\test\java\com\data\service\core\TradeIntegrationTest.java:22: 错误: 不兼容的类型: List<TradeEntity>无法转换为List<Trade>
+          List<Trade> trades = tradeRepository.findAll();
+                                                      ^
+  1 个错误
+
+* Try:
+> Check your code and dependencies to fix the compilation error(s)
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+
+BUILD FAILED in 49s
+4 actionable tasks: 4 executed

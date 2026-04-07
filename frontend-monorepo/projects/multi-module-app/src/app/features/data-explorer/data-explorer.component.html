@@ -1,0 +1,123 @@
+<div class="h-screen flex flex-col bg-gray-50 font-sans">
+  <header
+    class="bg-gradient-to-r from-blue-700 to-blue-500 text-white p-4 shadow-md flex justify-between items-center z-10"
+  >
+    <div class="flex items-center gap-3">
+      <div class="bg-white p-2 rounded-lg bg-opacity-20 backdrop-blur">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-6 w-6 text-white"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"
+          />
+        </svg>
+      </div>
+      <div>
+        <h1 class="text-2xl font-bold tracking-tight">Data Explorer</h1>
+        <p class="text-xs text-blue-100 uppercase tracking-wider font-semibold mt-0.5">Multi-DataSource Query System</p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-5">
+      <div class="flex items-center gap-2">
+        <div
+          class="w-8 h-8 rounded-full bg-blue-800 flex items-center justify-center text-sm font-bold border border-blue-400 shadow-sm"
+        >
+          {{ username ? username.charAt(0).toUpperCase() : 'U' }}
+        </div>
+        <span class="text-sm font-medium">{{ username }}</span>
+      </div>
+      <button
+        (click)="logout()"
+        class="px-4 py-1.5 bg-blue-800 hover:bg-blue-900 rounded-md text-sm font-medium transition-all shadow-sm border border-blue-700 flex items-center gap-2"
+      >
+        <span>Logout</span>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+          />
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="flex-1 overflow-hidden p-6 flex flex-col gap-6 w-full max-w-7xl mx-auto">
+    <app-query-builder
+      class="w-full shrink-0 animate-fade-in-down"
+      [availableFields]="fields"
+      (querySubmit)="onQuerySubmit($event)"
+    >
+    </app-query-builder>
+
+    <div
+      class="flex-1 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden flex flex-col mb-4 animate-fade-in-up"
+    >
+      <div class="bg-gray-50 border-b border-gray-200 p-3 px-5 flex justify-between items-center">
+        <h2 class="font-semibold text-gray-700 flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+            <path
+              d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z"
+            />
+          </svg>
+          Results Data Grid
+        </h2>
+        <span class="text-xs font-medium bg-blue-100 text-blue-800 py-1 px-2 rounded-full">
+          {{ tableData.length }} records
+        </span>
+      </div>
+      <div class="flex-1 w-full h-full relative">
+        <app-dynamic-table
+          [rowData]="tableData"
+          [columnDefs]="tableColumns"
+          [isLoading]="isLoading"
+          class="absolute inset-0 block"
+        >
+        </app-dynamic-table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<style>
+  @keyframes fadeInDown {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in-down {
+    animation: fadeInDown 0.4s ease-out forwards;
+  }
+
+  .animate-fade-in-up {
+    animation: fadeInUp 0.4s ease-out forwards;
+  }
+</style>

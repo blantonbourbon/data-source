@@ -1,0 +1,128 @@
+<div class="query-builder-container mat-elevation-z2" [formGroup]="queryForm">
+  <div class="simple-search-row">
+    <mat-form-field appearance="outline" class="search-input" subscriptSizing="dynamic">
+      <mat-icon matPrefix>search</mat-icon>
+      <input
+        matInput
+        formControlName="simpleSearch"
+        placeholder="Search across all data..."
+        (keyup.enter)="onSearchClick()"
+      />
+    </mat-form-field>
+
+    <div class="actions">
+      <button
+        mat-stroked-button
+        color="primary"
+        type="button"
+        (click)="toggleAdvanced()"
+        [class.active-toggle]="isAdvancedOpen"
+      >
+        <mat-icon>tune</mat-icon>
+        Advanced
+      </button>
+      <button mat-flat-button color="primary" type="button" (click)="onSearchClick()">Search</button>
+      <button mat-icon-button color="warn" matTooltip="Reset Query" type="button" (click)="resetForm()">
+        <mat-icon>restart_alt</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  @if (isAdvancedOpen) {
+    <div class="advanced-panel" formGroupName="advanced">
+      <div class="panel-header">
+        <div class="panel-header-copy">
+          <mat-icon color="primary">filter_alt</mat-icon>
+          <div>
+            <h4>Advanced Filters</h4>
+            <p>Use grouped filters to narrow the dataset without mixing actions into the field area.</p>
+          </div>
+        </div>
+      </div>
+
+      @for (group of fieldGroups; track group.key) {
+        <section class="field-group" [attr.aria-label]="group.label ?? 'Advanced filters'">
+          @if (group.label) {
+            <div class="group-header">
+              <h5>{{ group.label }}</h5>
+              <span>{{ group.fields.length }} filter{{ group.fields.length === 1 ? '' : 's' }}</span>
+            </div>
+          }
+
+          <div class="fields-grid">
+            @for (field of group.fields; track field.name) {
+              <div class="field-shell" [attr.data-span]="getFieldGridSpan(field)">
+                @switch (field.type) {
+                  @case ('date') {
+                    <mat-form-field appearance="outline" class="range-field" subscriptSizing="dynamic">
+                      <mat-label>{{ field.label }}</mat-label>
+                      <mat-date-range-input [rangePicker]="datePicker">
+                        <input
+                          matStartDate
+                          [formControlName]="field.name + '_start'"
+                          [placeholder]="getRangeStartPlaceholder(field)"
+                          (keyup.enter)="onSearchClick()"
+                        />
+                        <input
+                          matEndDate
+                          [formControlName]="field.name + '_end'"
+                          [placeholder]="getRangeEndPlaceholder(field)"
+                          (keyup.enter)="onSearchClick()"
+                        />
+                      </mat-date-range-input>
+                      <mat-datepicker-toggle matIconSuffix [for]="datePicker"></mat-datepicker-toggle>
+                      <mat-date-range-picker #datePicker></mat-date-range-picker>
+                    </mat-form-field>
+                  }
+                  @case ('time') {
+                    <div class="range-field time-range">
+                      <div class="field-heading">{{ field.label }}</div>
+                      <div class="time-inputs">
+                        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                          <mat-label>From</mat-label>
+                          <input
+                            matInput
+                            [matTimepicker]="startTimePicker"
+                            [formControlName]="field.name + '_start'"
+                            [placeholder]="getRangeStartPlaceholder(field)"
+                            (keyup.enter)="onSearchClick()"
+                          />
+                          <mat-timepicker-toggle matIconSuffix [for]="startTimePicker"></mat-timepicker-toggle>
+                          <mat-timepicker #startTimePicker interval="30m"></mat-timepicker>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                          <mat-label>To</mat-label>
+                          <input
+                            matInput
+                            [matTimepicker]="endTimePicker"
+                            [formControlName]="field.name + '_end'"
+                            [placeholder]="getRangeEndPlaceholder(field)"
+                            (keyup.enter)="onSearchClick()"
+                          />
+                          <mat-timepicker-toggle matIconSuffix [for]="endTimePicker"></mat-timepicker-toggle>
+                          <mat-timepicker #endTimePicker interval="30m"></mat-timepicker>
+                        </mat-form-field>
+                      </div>
+                    </div>
+                  }
+                  @default {
+                    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                      <mat-label>{{ field.label }}</mat-label>
+                      <input
+                        matInput
+                        [formControlName]="field.name"
+                        [placeholder]="getFieldPlaceholder(field)"
+                        (keyup.enter)="onSearchClick()"
+                      />
+                    </mat-form-field>
+                  }
+                }
+              </div>
+            }
+          </div>
+        </section>
+      }
+    </div>
+  }
+</div>

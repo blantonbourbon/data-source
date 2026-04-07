@@ -1,0 +1,37 @@
+<div class="workspace-container">
+  <div class="workspace-content">
+    @if (tabService.tabs$ | async; as tabs) {
+      @if (tabs.length > 0) {
+      <mat-tab-group
+        [selectedIndex]="tabService.activeTabIndex$ | async"
+        (selectedIndexChange)="onTabChange($event)"
+        animationDuration="0ms"
+      >
+        @for (tab of tabs; track tab.id; let i = $index) {
+          <mat-tab>
+            <ng-template mat-tab-label>
+              <span class="tab-title">{{ tab.title }}</span>
+              <button type="button" mat-icon-button class="close-btn" (click)="closeTab(i, $event)" [attr.aria-label]="'Close ' + tab.title">
+                <mat-icon>close</mat-icon>
+              </button>
+            </ng-template>
+
+            @if (tab.componentType) {
+              <div class="tab-content">
+                <ng-container *ngComponentOutlet="tab.componentType; inputs: tab.data || {}"></ng-container>
+              </div>
+            }
+          </mat-tab>
+        }
+      </mat-tab-group>
+      } @else {
+      <div class="empty-state">
+        <mat-icon class="huge-icon">web</mat-icon>
+        <h2>No open modules</h2>
+        <p>Select an authorized module from the dashboard to open it in the workspace.</p>
+        <button mat-raised-button color="primary" routerLink="/">Return to Dashboard</button>
+      </div>
+      }
+    }
+  </div>
+</div>

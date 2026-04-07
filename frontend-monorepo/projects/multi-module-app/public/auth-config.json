@@ -1,0 +1,7 @@
+{
+  "mePath": "/api/me",
+  "loginPath": "/api/auth/login",
+  "logoutPath": "/api/auth/logout",
+  "defaultReturnUrl": "/",
+  "notes": "Frontend auth is handled by the backend BFF session. Update these paths if your backend uses different auth endpoints."
+}

@@ -1,0 +1,31 @@
+package: com.data.service.core.model
+entities:
+  - name: CryptoAsset
+    tableName: crypto_assets
+    attributes:
+      - name: id
+        type: Long
+        isId: true
+      - name: symbol
+        type: String
+      - name: marketCap
+        type: java.math.BigDecimal
+      - name: listingDate
+        type: java.time.LocalDate
+
+  - name: Trade
+    tableName: trade
+    attributes:
+      - name: id
+        type: Long
+        isId: true
+      - name: tradeType
+        type: String
+      - name: tradeDate
+        type: java.time.LocalDate
+      - name: amount
+        type: Double
+      - name: currency
+        type: String
+      - name: counterparty
+        type: String

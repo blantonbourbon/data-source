@@ -1,0 +1,53 @@
+<div class="ms-app-layout">
+  <header class="ms-top-nav">
+    <div class="nav-brand">
+      <span class="brand-bold">Multi-Module App</span>
+    </div>
+
+    <nav class="nav-center" aria-label="Primary">
+      <button type="button" class="icon-button" aria-label="Filters">
+        <mat-icon>tune</mat-icon>
+      </button>
+      <a
+        class="icon-button"
+        routerLink="/"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+        aria-label="Home"
+      >
+        <mat-icon>home</mat-icon>
+      </a>
+      <a class="icon-button" routerLink="/workspace" routerLinkActive="active" aria-label="Workspace">
+        <mat-icon>dashboard</mat-icon>
+      </a>
+      <button type="button" class="icon-button" aria-label="Notifications">
+        <mat-icon>notifications</mat-icon>
+      </button>
+    </nav>
+
+    <div class="nav-search-container">
+      <label class="sr-only" for="quick-launch">Quick launch application</label>
+      <input id="quick-launch" type="text" class="nav-search-input" placeholder="Quick launch application" />
+    </div>
+
+    <div class="nav-actions">
+      <button type="button" class="icon-button" aria-label="Application switcher">
+        <mat-icon>apps</mat-icon>
+      </button>
+
+      @if (currentUser$ | async; as currentUser) {
+        <div class="user-summary" aria-label="Signed in user">
+          <span class="user-name">{{ currentUser.displayName }}</span>
+          <span class="user-secondary">{{ currentUser.username }}</span>
+        </div>
+        <button type="button" class="auth-action" (click)="signOut()">Sign out</button>
+      } @else {
+        <a class="auth-action" routerLink="/auth/login">Sign in</a>
+      }
+    </div>
+  </header>
+
+  <main class="ms-main-content">
+    <router-outlet></router-outlet>
+  </main>
+</div>

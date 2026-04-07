@@ -1,0 +1,115 @@
+.workspace-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  overflow: hidden;
+}
+
+.workspace-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  mat-tab-group {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  ::ng-deep .mat-mdc-tab {
+    width: 220px;
+    min-width: 220px;
+    max-width: 220px;
+    padding: 0 12px;
+    border-right: 1px solid rgba(0, 0, 0, 0.1);
+  }
+
+  ::ng-deep .mat-mdc-tab .mdc-tab__content {
+    width: 100%;
+  }
+
+  ::ng-deep .mat-mdc-tab .mdc-tab__text-label {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  ::ng-deep .mat-mdc-tab-body-wrapper {
+    flex: 1;
+    min-height: 0;
+  }
+
+  ::ng-deep .mat-mdc-tab-body-content {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    height: 100%;
+  }
+}
+
+.tab-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: center;
+  flex: 1;
+}
+
+.tab-content {
+  flex: 1;
+  min-height: 0;
+  padding: 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.close-btn {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  margin-left: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #666;
+  padding: 24px;
+  text-align: center;
+
+  .huge-icon {
+    font-size: 80px;
+    height: 80px;
+    width: 80px;
+    margin-bottom: 20px;
+    color: #ddd;
+  }
+
+  h2 {
+    margin: 0 0 0.75rem;
+  }
+
+  p {
+    margin: 0 0 1.5rem;
+    max-width: 28rem;
+    line-height: 1.5;
+  }
+}
