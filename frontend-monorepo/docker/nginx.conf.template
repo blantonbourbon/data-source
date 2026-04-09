@@ -27,4 +27,43 @@ server {
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto $scheme;
   }
+
+  location = /oauth2 {
+    return 301 /oauth2/;
+  }
+
+  location /oauth2/ {
+    proxy_pass ${BACKEND_ORIGIN};
+    proxy_http_version 1.1;
+    proxy_set_header Host $proxy_host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+  }
+
+  location = /oauth {
+    return 301 /oauth/;
+  }
+
+  location /oauth/ {
+    proxy_pass ${BACKEND_ORIGIN};
+    proxy_http_version 1.1;
+    proxy_set_header Host $proxy_host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+  }
+
+  location = /login/oauth2 {
+    return 301 /login/oauth2/;
+  }
+
+  location /login/oauth2/ {
+    proxy_pass ${BACKEND_ORIGIN};
+    proxy_http_version 1.1;
+    proxy_set_header Host $proxy_host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+  }
 }
