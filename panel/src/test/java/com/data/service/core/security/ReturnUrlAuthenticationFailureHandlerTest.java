@@ -28,7 +28,7 @@ class ReturnUrlAuthenticationFailureHandlerTest {
         );
 
         assertEquals(
-                "/auth/login?returnUrl=%2Fworkspace&error=Sign-in%20failed.%20Please%20try%20again.",
+                "/auth/login?returnUrl=/workspace&error=Sign-in%20failed.%20Please%20try%20again.",
                 response.getRedirectedUrl()
         );
     }
