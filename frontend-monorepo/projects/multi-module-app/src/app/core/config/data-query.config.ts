@@ -50,9 +50,7 @@ export const BuiltinModules: Record<string, DataQueryConfig> = {
         field: 'id',
         headerName: 'ID',
         filter: 'agNumberColumnFilter',
-        maxWidth: 100,
-        checkboxSelection: true,
-        headerCheckboxSelection: true
+        maxWidth: 100
       },
       { field: 'tradeType', headerName: 'Trade Type', filter: 'agTextColumnFilter' },
       { field: 'tradeDate', headerName: 'Trade Date', filter: 'agDateColumnFilter' },
@@ -90,9 +88,7 @@ export const BuiltinModules: Record<string, DataQueryConfig> = {
         field: 'id',
         headerName: 'ID',
         filter: 'agNumberColumnFilter',
-        maxWidth: 100,
-        checkboxSelection: true,
-        headerCheckboxSelection: true
+        maxWidth: 100
       },
       { field: 'symbol', headerName: 'Symbol', filter: 'agTextColumnFilter' },
       {

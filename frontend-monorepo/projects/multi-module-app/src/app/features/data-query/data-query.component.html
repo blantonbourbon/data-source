@@ -195,12 +195,13 @@
         [rowData]="queryTabs[selectedTabIndex].dataSource"
         [columnDefs]="queryTabs[selectedTabIndex].colDefs || colDefs"
         [defaultColDef]="defaultColDef"
+        [rowSelection]="rowSelection"
+        [selectionColumnDef]="selectionColumnDef"
         (gridReady)="onGridReady($event, selectedTabIndex)"
         (cellContextMenu)="onContextMenu($event)"
         (selectionChanged)="onSelectionChanged()"
         (filterChanged)="onGridFilterChanged()"
         [preventDefaultOnContextMenu]="true"
-        rowSelection="multiple"
       >
       </ag-grid-angular>
     </div>

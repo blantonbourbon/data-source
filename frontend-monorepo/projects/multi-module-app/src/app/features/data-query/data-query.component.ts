@@ -1,6 +1,14 @@
 import { Component, OnInit, ViewChild, Inject, Input } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { ColDef, GridReadyEvent, CellContextMenuEvent, ModuleRegistry, AllCommunityModule } from 'ag-grid-community';
+import {
+  ColDef,
+  GridReadyEvent,
+  CellContextMenuEvent,
+  ModuleRegistry,
+  AllCommunityModule,
+  RowSelectionOptions,
+  SelectionColumnDef
+} from 'ag-grid-community';
 import { firstValueFrom } from 'rxjs';
 import * as XLSX from 'xlsx';
 
@@ -109,6 +117,20 @@ export class DataQueryComponent implements OnInit {
     resizable: true,
     wrapHeaderText: true,
     autoHeaderHeight: true
+  };
+  readonly rowSelection: RowSelectionOptions = {
+    mode: 'multiRow',
+    checkboxes: true,
+    headerCheckbox: true
+  };
+  readonly selectionColumnDef: SelectionColumnDef = {
+    width: 56,
+    minWidth: 56,
+    maxWidth: 56,
+    pinned: 'left',
+    suppressHeaderMenuButton: true,
+    resizable: false,
+    sortable: false
   };
   allData: any[] = [];
   queryTabs: QueryTab[] = [];
