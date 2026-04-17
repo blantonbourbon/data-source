@@ -12,7 +12,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 @Service
@@ -20,7 +19,6 @@ public class ExportEmailService {
 
     private static final Logger log = LoggerFactory.getLogger(ExportEmailService.class);
     private static final Pattern EMAIL_PATTERN = Pattern.compile("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$");
-    private static final Set<String> SUPPORTED_FORMATS = Set.of("csv", "xlsx");
     private static final Map<String, List<String>> SUPPORTED_CONTENT_TYPES = Map.of(
             "csv", List.of("text/csv", "text/csv;charset=utf-8", "text/csv;charset=utf-8;"),
             "xlsx", List.of("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
@@ -34,60 +32,80 @@ public class ExportEmailService {
             throw badRequest("Export email request body is required.");
         }
 
-        List<String> recipients = normalizeRecipients(request.getRecipients());
+        List<String> to = normalizeRequiredEmails(request.getTo(), "to");
+        String from = normalizeSender(request.getFrom());
+        List<String> cc = normalizeOptionalEmails(request.getCc(), "cc");
         List<NormalizedAttachment> attachments = normalizeAttachments(request.getAttachments());
-        int rowCount = normalizeRowCount(request.getRowCount());
-        String exportTitle = normalizeExportTitle(request.getExportTitle());
+        validateRecipientLimit(to.size() + cc.size());
 
         log.info(
-                "Accepted export email request: entity={}, exportTitle={}, rowCount={}, recipientCount={}, attachmentCount={}, attachmentNames={}, formats={}, totalAttachmentBytes={}, deliveryMode=log-only",
+                "Accepted export email request: entity={}, from={}, toCount={}, ccCount={}, recipientCount={}, attachmentCount={}, attachmentNames={}, totalAttachmentBytes={}, deliveryMode=log-only",
                 entity,
-                exportTitle,
-                rowCount,
-                recipients.size(),
+                from,
+                to.size(),
+                cc.size(),
+                to.size() + cc.size(),
                 attachments.size(),
                 attachments.stream().map(NormalizedAttachment::fileName).toList(),
-                attachments.stream().map(NormalizedAttachment::format).toList(),
                 attachments.stream().mapToInt(NormalizedAttachment::sizeBytes).sum()
         );
 
         return new ExportEmailResponse(
                 "accepted",
                 "log-only",
-                recipients.size(),
+                to.size() + cc.size(),
                 attachments.size(),
                 "Export email request accepted in log-only mode."
         );
     }
 
-    private List<String> normalizeRecipients(List<String> rawRecipients) {
-        if (rawRecipients == null || rawRecipients.isEmpty()) {
-            throw badRequest("At least one recipient email is required.");
+    private List<String> normalizeRequiredEmails(List<String> rawEmails, String fieldName) {
+        List<String> normalizedEmails = normalizeEmailList(rawEmails, fieldName);
+        if (normalizedEmails.isEmpty()) {
+            throw badRequest("At least one " + fieldName + " email address is required.");
         }
+        return normalizedEmails;
+    }
 
+    private List<String> normalizeOptionalEmails(List<String> rawEmails, String fieldName) {
+        return normalizeEmailList(rawEmails, fieldName);
+    }
+
+    private List<String> normalizeEmailList(List<String> rawEmails, String fieldName) {
         LinkedHashSet<String> uniqueRecipients = new LinkedHashSet<>();
-        for (String rawRecipient : rawRecipients) {
+        for (String rawRecipient : rawEmails == null ? List.<String>of() : rawEmails) {
             String normalizedRecipient = rawRecipient == null ? "" : rawRecipient.trim().toLowerCase(Locale.ROOT);
             if (normalizedRecipient.isEmpty()) {
                 continue;
             }
 
             if (!EMAIL_PATTERN.matcher(normalizedRecipient).matches()) {
-                throw badRequest("Recipient email addresses must be valid.");
+                throw badRequest("The " + fieldName + " email addresses must be valid.");
             }
 
             uniqueRecipients.add(normalizedRecipient);
         }
 
-        if (uniqueRecipients.isEmpty()) {
-            throw badRequest("At least one recipient email is required.");
-        }
-
-        if (uniqueRecipients.size() > MAX_RECIPIENTS) {
-            throw badRequest("Export emails support up to " + MAX_RECIPIENTS + " recipients per request.");
-        }
-
         return List.copyOf(uniqueRecipients);
+    }
+
+    private String normalizeSender(String rawFrom) {
+        String from = rawFrom == null ? "" : rawFrom.trim().toLowerCase(Locale.ROOT);
+        if (from.isEmpty()) {
+            throw badRequest("A valid from email address is required.");
+        }
+
+        if (!EMAIL_PATTERN.matcher(from).matches()) {
+            throw badRequest("The from email address must be valid.");
+        }
+
+        return from;
+    }
+
+    private void validateRecipientLimit(int recipientCount) {
+        if (recipientCount > MAX_RECIPIENTS) {
+            throw badRequest("Export emails support up to " + MAX_RECIPIENTS + " total to/cc recipients per request.");
+        }
     }
 
     private List<NormalizedAttachment> normalizeAttachments(List<ExportEmailAttachmentRequest> rawAttachments) {
@@ -105,45 +123,48 @@ public class ExportEmailService {
                 throw badRequest("Export attachments cannot be empty.");
             }
 
-            String format = normalizeFormat(rawAttachment.getFormat());
-            String fileName = normalizeFileName(rawAttachment.getFileName(), format);
-            String contentType = normalizeContentType(rawAttachment.getContentType(), format);
+            String fileName = normalizeFileName(rawAttachment.getFileName());
+            String contentType = normalizeContentType(rawAttachment.getContentType(), fileName);
             int sizeBytes = normalizeAttachmentBytes(rawAttachment.getFileBase64());
 
-            normalizedAttachments.add(new NormalizedAttachment(format, fileName, contentType, sizeBytes));
+            normalizedAttachments.add(new NormalizedAttachment(fileName, sizeBytes));
         }
 
         return List.copyOf(normalizedAttachments);
     }
 
-    private String normalizeFormat(String rawFormat) {
-        String format = rawFormat == null ? "" : rawFormat.trim().toLowerCase(Locale.ROOT);
-        if (!SUPPORTED_FORMATS.contains(format)) {
-            throw badRequest("Unsupported export format. Supported values are csv and xlsx.");
-        }
-        return format;
-    }
-
-    private String normalizeFileName(String rawFileName, String format) {
+    private String normalizeFileName(String rawFileName) {
         String fileName = rawFileName == null ? "" : rawFileName.trim();
         if (fileName.isEmpty()) {
             throw badRequest("Each export attachment must include a file name.");
         }
 
-        if (!fileName.toLowerCase(Locale.ROOT).endsWith("." + format)) {
-            throw badRequest("Attachment file names must match their selected format.");
+        if (resolveAttachmentExtension(fileName) == null) {
+            throw badRequest("Attachment file names must end with .csv or .xlsx.");
         }
 
         return fileName;
     }
 
-    private String normalizeContentType(String rawContentType, String format) {
+    private String normalizeContentType(String rawContentType, String fileName) {
         String contentType = rawContentType == null ? "" : rawContentType.trim().toLowerCase(Locale.ROOT);
-        List<String> supportedTypes = SUPPORTED_CONTENT_TYPES.get(format);
+        String attachmentExtension = resolveAttachmentExtension(fileName);
+        List<String> supportedTypes = attachmentExtension == null ? null : SUPPORTED_CONTENT_TYPES.get(attachmentExtension);
         if (supportedTypes == null || !supportedTypes.contains(contentType)) {
             throw badRequest("Attachment content type does not match the selected export format.");
         }
         return contentType;
+    }
+
+    private String resolveAttachmentExtension(String fileName) {
+        String normalizedFileName = fileName.toLowerCase(Locale.ROOT);
+        if (normalizedFileName.endsWith(".csv")) {
+            return "csv";
+        }
+        if (normalizedFileName.endsWith(".xlsx")) {
+            return "xlsx";
+        }
+        return null;
     }
 
     private int normalizeAttachmentBytes(String rawBase64) {
@@ -170,26 +191,12 @@ public class ExportEmailService {
         return decodedBytes.length;
     }
 
-    private int normalizeRowCount(Integer rowCount) {
-        if (rowCount == null || rowCount < 1) {
-            throw badRequest("Export requests must include a positive row count.");
-        }
-        return rowCount;
-    }
-
-    private String normalizeExportTitle(String rawExportTitle) {
-        String exportTitle = rawExportTitle == null ? "" : rawExportTitle.trim();
-        return exportTitle.isEmpty() ? "<unspecified>" : exportTitle;
-    }
-
     private ResponseStatusException badRequest(String message) {
         return new ResponseStatusException(HttpStatus.BAD_REQUEST, message);
     }
 
     private record NormalizedAttachment(
-            String format,
             String fileName,
-            String contentType,
             int sizeBytes
     ) {
     }

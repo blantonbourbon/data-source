@@ -82,6 +82,49 @@ describe('DataQueryComponent', () => {
     });
   });
 
+  it('shows inline feedback when the sender email cannot be determined', () => {
+    component = new DataQueryComponent(http, dialog, {
+      currentUserValue: {
+        email: undefined
+      }
+    } as AuthService);
+
+    component.config = BuiltinModules['xms'];
+    component.queryTabs = [
+      {
+        title: 'All Data',
+        dataSource: [
+          {
+            id: 1,
+            tradeType: 'Spot'
+          }
+        ],
+        colDefs: component.config.colDefs
+      }
+    ];
+    component.selectedTabIndex = 0;
+    component.gridApi = {
+      getSelectedNodes: jasmine.createSpy().and.returnValue([
+        {
+          data: {
+            id: 1,
+            tradeType: 'Spot'
+          }
+        }
+      ]),
+      getDisplayedRowCount: jasmine.createSpy().and.returnValue(1)
+    };
+    component.exportEmailInput = 'bob@example.com';
+
+    component.exportSelectedRowsAndSendEmail();
+
+    expect(http.post).not.toHaveBeenCalled();
+    expect(component.exportFeedback).toEqual({
+      tone: 'error',
+      message: 'Your account email is unavailable, so the export sender address cannot be determined.'
+    });
+  });
+
   it('uses the current user email when the recipient field is blank', async () => {
     component.gridApi.getSelectedNodes.and.returnValue([
       {
@@ -102,14 +145,14 @@ describe('DataQueryComponent', () => {
     expect(http.post).toHaveBeenCalledWith(
       `${component.config.apiEndpoint}/export/email`,
       jasmine.objectContaining({
-        recipients: ['alice@example.com'],
+        to: ['alice@example.com'],
+        from: 'alice@example.com',
+        cc: [],
         attachments: [
           jasmine.objectContaining({
-            format: 'csv',
             fileBase64: 'encoded-file'
           })
-        ],
-        rowCount: 1
+        ]
       })
     );
     expect(component.exportFeedback).toEqual({
@@ -141,9 +184,12 @@ describe('DataQueryComponent', () => {
     expect(http.post).toHaveBeenCalledWith(
       `${component.config.apiEndpoint}/export/email`,
       jasmine.objectContaining({
+        to: ['alice@example.com'],
+        from: 'alice@example.com',
+        cc: [],
         attachments: [
-          jasmine.objectContaining({ format: 'csv', fileName: jasmine.stringMatching(/\.csv$/) }),
-          jasmine.objectContaining({ format: 'xlsx', fileName: jasmine.stringMatching(/\.xlsx$/) })
+          jasmine.objectContaining({ fileName: jasmine.stringMatching(/\.csv$/) }),
+          jasmine.objectContaining({ fileName: jasmine.stringMatching(/\.xlsx$/) })
         ]
       })
     );

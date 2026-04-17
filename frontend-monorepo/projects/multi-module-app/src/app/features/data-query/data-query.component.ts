@@ -35,10 +35,16 @@ interface ExportFeedback {
 type ExportFormat = 'csv' | 'xlsx';
 
 interface ExportAttachmentPayload {
-  format: ExportFormat;
   fileName: string;
   contentType: string;
   fileBase64: string;
+}
+
+interface ExportEmailPayload {
+  to: string[];
+  from: string;
+  cc: string[];
+  attachments: ExportAttachmentPayload[];
 }
 
 interface PreparedExportFile {
@@ -466,8 +472,8 @@ export class DataQueryComponent implements OnInit {
 
   get exportEmailHint(): string {
     return this.defaultRecipientEmail
-      ? 'Separate multiple addresses with commas, semicolons, or spaces. Leaving this blank uses your account email.'
-      : 'Separate multiple addresses with commas, semicolons, or spaces.';
+      ? 'Separate multiple addresses with commas, semicolons, or spaces. Your account email is used as the sender.'
+      : 'Separate multiple addresses with commas, semicolons, or spaces. Your account email is required as the sender.';
   }
 
   get selectedExportFormats(): ExportFormat[] {
@@ -549,6 +555,15 @@ export class DataQueryComponent implements OnInit {
       return;
     }
 
+    const senderEmail = this.defaultRecipientEmail;
+    if (!senderEmail) {
+      this.setExportFeedback(
+        'error',
+        'Your account email is unavailable, so the export sender address cannot be determined.'
+      );
+      return;
+    }
+
     const selectedFormats = this.selectedExportFormats;
     if (selectedFormats.length === 0) {
       this.setExportFeedback('error', 'Select at least one file format before downloading or emailing the export.');
@@ -567,7 +582,6 @@ export class DataQueryComponent implements OnInit {
       preparedFiles.map(file =>
         this.blobToBase64(file.blob).then(
           (fileBase64): ExportAttachmentPayload => ({
-            format: file.format,
             fileName: file.fileName,
             contentType: file.contentType,
             fileBase64
@@ -576,11 +590,11 @@ export class DataQueryComponent implements OnInit {
       )
     )
       .then(attachments => {
-        const payload = {
-          recipients: recipientEmails,
-          attachments,
-          rowCount: selectedRows.length,
-          exportTitle: activeTab.title || 'query-result'
+        const payload: ExportEmailPayload = {
+          to: recipientEmails,
+          from: senderEmail,
+          cc: [],
+          attachments
         };
         return firstValueFrom(this.http.post<ExportEmailResponse>(`${this.config.apiEndpoint}/export/email`, payload));
       })

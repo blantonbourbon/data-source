@@ -192,17 +192,16 @@ class SecurityIntegrationTest {
     private String validExportEmailPayload() {
         return """
                 {
-                  "recipients": ["alice@example.com"],
+                  "to": ["alice@example.com"],
+                  "from": "sender@example.com",
+                  "cc": [],
                   "attachments": [
                     {
-                      "format": "csv",
                       "fileName": "trades-export.csv",
                       "contentType": "text/csv;charset=utf-8;",
                       "fileBase64": "aWQsdHJhZGVUeXBlCjEsU3BvdAo="
                     }
-                  ],
-                  "rowCount": 1,
-                  "exportTitle": "Trades export"
+                  ]
                 }
                 """;
     }
