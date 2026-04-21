@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:dribbble.com)",
+      "Bash(npx ng *)",
+      "Bash(export PATH=\"/c/Users/lov3c/AppData/Local/nvm/v24.14.1:/c/Users/lov3c/AppData/Roaming/npm:$PATH\")",
+      "Bash(ng build *)"
+    ]
+  }
+}

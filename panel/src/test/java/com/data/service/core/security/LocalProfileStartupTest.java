@@ -1,5 +1,6 @@
 package com.data.service.core.security;
 
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -39,10 +40,19 @@ class LocalProfileStartupTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value("local-dev-user"))
                 .andExpect(jsonPath("$.username").value("local-dev"))
+                .andExpect(jsonPath("$.email").value("local.dev@example.test"))
                 .andExpect(jsonPath("$.permissions[0]").value("module:xms:read"));
 
+        mockMvc.perform(get("/api/user/trades"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", Matchers.hasSize(8)))
+                .andExpect(jsonPath("$[*].tradeType", Matchers.hasItems("SPOT", "FORWARD", "SWAP", "OPTION", "NDF")))
+                .andExpect(jsonPath("$[*].counterparty", Matchers.hasItems("Bank A", "Bank B", "Broker X")));
+
         mockMvc.perform(get("/api/user/cryptoassets"))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", Matchers.hasSize(6)))
+                .andExpect(jsonPath("$[*].symbol", Matchers.hasItems("BTC", "ETH", "SOL", "XRP", "ADA", "AVAX")));
     }
 
     @Test

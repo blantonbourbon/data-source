@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { MatDialog } from '@angular/material/dialog';
+import { MatMenuTrigger } from '@angular/material/menu';
 import { of } from 'rxjs';
 
 import { BuiltinModules } from '../../core/config/data-query.config';
@@ -10,6 +11,7 @@ describe('DataQueryComponent', () => {
   let http: jasmine.SpyObj<HttpClient>;
   let dialog: jasmine.SpyObj<MatDialog>;
   let component: DataQueryComponent;
+  let emailSettingsTrigger: jasmine.SpyObj<MatMenuTrigger>;
 
   beforeEach(() => {
     http = jasmine.createSpyObj<HttpClient>('HttpClient', ['get', 'post']);
@@ -20,6 +22,7 @@ describe('DataQueryComponent', () => {
         email: 'alice@example.com'
       }
     } as AuthService);
+    emailSettingsTrigger = jasmine.createSpyObj<MatMenuTrigger>('MatMenuTrigger', ['openMenu', 'closeMenu']);
 
     component.config = BuiltinModules['xms'];
     component.queryTabs = [
@@ -39,6 +42,7 @@ describe('DataQueryComponent', () => {
       getSelectedNodes: jasmine.createSpy().and.returnValue([]),
       getDisplayedRowCount: jasmine.createSpy().and.returnValue(1)
     };
+    component.emailSettingsTrigger = emailSettingsTrigger;
   });
 
   it('shows inline feedback when export is triggered without selected rows', () => {
@@ -51,14 +55,20 @@ describe('DataQueryComponent', () => {
     });
   });
 
-  it('opens result tools by default and toggles them closed and open again', () => {
-    expect(component.isResultToolsOpen).toBeTrue();
+  it('shows the selected-row count directly in the export button label', () => {
+    component.selectedRowCount = 3;
 
-    component.toggleResultTools();
-    expect(component.isResultToolsOpen).toBeFalse();
+    expect(component.exportActionLabel).toBe('Download and Send (3 rows selected)');
+  });
 
-    component.toggleResultTools();
-    expect(component.isResultToolsOpen).toBeTrue();
+  it('tracks email settings menu open and close state', () => {
+    expect(component.isEmailConfigOpen).toBeFalse();
+
+    component.onEmailSettingsMenuOpened();
+    expect(component.isEmailConfigOpen).toBeTrue();
+
+    component.onEmailSettingsMenuClosed();
+    expect(component.isEmailConfigOpen).toBeFalse();
   });
 
   it('shows inline feedback when no export format is selected', () => {
@@ -76,6 +86,8 @@ describe('DataQueryComponent', () => {
     component.exportSelectedRowsAndSendEmail();
 
     expect(http.post).not.toHaveBeenCalled();
+    expect(component.isEmailConfigOpen).toBeTrue();
+    expect(emailSettingsTrigger.openMenu).toHaveBeenCalled();
     expect(component.exportFeedback).toEqual({
       tone: 'error',
       message: 'Select at least one file format before downloading or emailing the export.'
@@ -125,6 +137,28 @@ describe('DataQueryComponent', () => {
     });
   });
 
+  it('opens email settings when export is triggered with no valid custom recipient', () => {
+    component.gridApi.getSelectedNodes.and.returnValue([
+      {
+        data: {
+          id: 1,
+          tradeType: 'Spot'
+        }
+      }
+    ]);
+    component.exportEmailInput = 'not-an-email';
+
+    component.exportSelectedRowsAndSendEmail();
+
+    expect(http.post).not.toHaveBeenCalled();
+    expect(component.isEmailConfigOpen).toBeTrue();
+    expect(emailSettingsTrigger.openMenu).toHaveBeenCalled();
+    expect(component.exportFeedback).toEqual({
+      tone: 'error',
+      message: 'Add at least one valid recipient email before sending the export.'
+    });
+  });
+
   it('uses the current user email when the recipient field is blank', async () => {
     component.gridApi.getSelectedNodes.and.returnValue([
       {
@@ -142,6 +176,7 @@ describe('DataQueryComponent', () => {
     component.exportSelectedRowsAndSendEmail();
     await new Promise(resolve => setTimeout(resolve, 0));
 
+    expect(emailSettingsTrigger.closeMenu).toHaveBeenCalled();
     expect(http.post).toHaveBeenCalledWith(
       `${component.config.apiEndpoint}/export/email`,
       jasmine.objectContaining({
@@ -181,6 +216,7 @@ describe('DataQueryComponent', () => {
     await new Promise(resolve => setTimeout(resolve, 0));
 
     expect(downloadBlobSpy).toHaveBeenCalledTimes(2);
+    expect(emailSettingsTrigger.closeMenu).toHaveBeenCalled();
     expect(http.post).toHaveBeenCalledWith(
       `${component.config.apiEndpoint}/export/email`,
       jasmine.objectContaining({

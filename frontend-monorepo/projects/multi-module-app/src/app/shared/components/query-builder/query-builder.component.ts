@@ -110,6 +110,7 @@ export class QueryBuilderComponent implements OnInit, OnChanges {
 
   resetForm() {
     this.queryForm.reset();
+    this.isAdvancedOpen = false;
     this.querySubmit.emit([]);
   }
 
@@ -182,11 +183,16 @@ export class QueryBuilderComponent implements OnInit, OnChanges {
   }
 
   onSearchClick() {
-    if (this.isAdvancedOpen) {
-      this.onAdvancedSubmit();
-    } else {
-      this.onSimpleSubmit();
-    }
+    this.onSimpleSubmit();
+  }
+
+  clearAdvancedFilters() {
+    this.advancedForm.reset();
+  }
+
+  applyAdvancedFilters() {
+    this.onAdvancedSubmit();
+    this.isAdvancedOpen = false;
   }
 
   isRangeField(field: FilterField): boolean {
@@ -202,7 +208,7 @@ export class QueryBuilderComponent implements OnInit, OnChanges {
   }
 
   getFieldPlaceholder(field: FilterField): string {
-    return field.placeholder ?? `Enter ${field.label}`;
+    return field.placeholder ?? '';
   }
 
   getRangeStartPlaceholder(field: FilterField): string {
@@ -211,6 +217,24 @@ export class QueryBuilderComponent implements OnInit, OnChanges {
 
   getRangeEndPlaceholder(field: FilterField): string {
     return field.type === 'time' ? 'End time' : 'End date';
+  }
+
+  get activeAdvancedFilterCount(): number {
+    if (!this.queryForm) {
+      return 0;
+    }
+
+    const advancedValues = this.advancedForm.getRawValue() as Record<string, string | Date | null>;
+
+    return this.availableFields.reduce((count, field) => {
+      if (this.isRangeField(field)) {
+        const hasRangeValue = Boolean(advancedValues[`${field.name}_start`] || advancedValues[`${field.name}_end`]);
+        return hasRangeValue ? count + 1 : count;
+      }
+
+      const value = advancedValues[field.name];
+      return typeof value === 'string' && value.trim() !== '' ? count + 1 : count;
+    }, 0);
   }
 
   private buildFieldGroups(): FieldGroupViewModel[] {

@@ -1,0 +1,4 @@
+{"file": ".agents/skills/finish-work/SKILL.md", "reason": "Finish work checklist"}
+{"file": ".agents/skills/check-frontend/SKILL.md", "reason": "Frontend check spec"}
+{"file": ".trellis/spec/frontend/quality-guidelines.md", "reason": "Review changed frontend behavior and targeted verification needs."}
+{"file": "frontend-monorepo/projects/multi-module-app/src/app/features/data-query/data-query.component.spec.ts", "reason": "Update and review targeted unit tests for export UI state and behavior."}

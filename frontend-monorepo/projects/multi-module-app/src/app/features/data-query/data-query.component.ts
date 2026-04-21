@@ -145,13 +145,14 @@ export class DataQueryComponent implements OnInit {
   exportEmailInput = '';
   exportCsvSelected = true;
   exportXlsxSelected = false;
-  isResultToolsOpen = true;
+  isEmailConfigOpen = false;
   isExporting = false;
   selectedRowCount = 0;
   visibleRowCount = 0;
   exportFeedback: ExportFeedback | null = null;
 
   @ViewChild('contextMenuTrigger') contextMenu!: MatMenuTrigger;
+  @ViewChild('emailSettingsTrigger') emailSettingsTrigger?: MatMenuTrigger;
   contextMenuPosition = { x: '0px', y: '0px' };
 
   constructor(
@@ -414,7 +415,7 @@ export class DataQueryComponent implements OnInit {
     this.syncExportContext();
   }
 
-  applyTabFilter(event: Event, tabIndex: number) {
+  applyTabFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
     if (this.gridApi) {
       this.gridApi.setGridOption('quickFilterText', filterValue);
@@ -439,8 +440,12 @@ export class DataQueryComponent implements OnInit {
     this.syncExportContext();
   }
 
-  toggleResultTools() {
-    this.isResultToolsOpen = !this.isResultToolsOpen;
+  onEmailSettingsMenuOpened() {
+    this.isEmailConfigOpen = true;
+  }
+
+  onEmailSettingsMenuClosed() {
+    this.isEmailConfigOpen = false;
   }
 
   onReset() {
@@ -460,20 +465,21 @@ export class DataQueryComponent implements OnInit {
     this.clearExportFeedback();
   }
 
+  toggleExportFormat(format: ExportFormat) {
+    if (format === 'csv') {
+      this.exportCsvSelected = !this.exportCsvSelected;
+    } else {
+      this.exportXlsxSelected = !this.exportXlsxSelected;
+    }
+    this.onExportFormatChange();
+  }
+
   get defaultRecipientEmail(): string {
     return this.authService.currentUserValue?.email?.trim() ?? '';
   }
 
   get exportEmailPlaceholder(): string {
-    return this.defaultRecipientEmail
-      ? 'Add more recipient emails, or leave blank to use your account email'
-      : 'Add one or more recipient emails';
-  }
-
-  get exportEmailHint(): string {
-    return this.defaultRecipientEmail
-      ? 'Separate multiple addresses with commas, semicolons, or spaces. Your account email is used as the sender.'
-      : 'Separate multiple addresses with commas, semicolons, or spaces. Your account email is required as the sender.';
+    return this.defaultRecipientEmail ? 'Add recipients or leave blank' : 'Add recipients';
   }
 
   get selectedExportFormats(): ExportFormat[] {
@@ -498,16 +504,29 @@ export class DataQueryComponent implements OnInit {
     return this.describeExportFormats(this.selectedExportFormats);
   }
 
+  get exportRecipientSummary(): string {
+    if (this.exportEmailInput.trim()) {
+      const validRecipients = this.typedRecipientPreviewEmails.length;
+      if (validRecipients > 0) {
+        return `${validRecipients} custom ${validRecipients === 1 ? 'recipient' : 'recipients'} ready`;
+      }
+
+      return 'No valid custom recipients yet';
+    }
+
+    if (this.defaultRecipientEmail) {
+      return 'Using your account email';
+    }
+
+    return 'No recipient configured';
+  }
+
   get exportActionLabel(): string {
     if (this.isExporting) {
       return 'Sending export...';
     }
 
-    if (this.selectedExportFormats.length === 0) {
-      return 'Download & send export';
-    }
-
-    return `Download & send ${this.describeExportFormats(this.selectedExportFormats)}`;
+    return `Download and Send (${this.selectedRowCount} ${this.selectedRowCount === 1 ? 'row' : 'rows'} selected)`;
   }
 
   get typedRecipientPreviewEmails(): string[] {
@@ -551,6 +570,7 @@ export class DataQueryComponent implements OnInit {
 
     const recipientEmails = this.getEffectiveRecipientEmails();
     if (recipientEmails.length === 0) {
+      this.openEmailSettingsMenu();
       this.setExportFeedback('error', 'Add at least one valid recipient email before sending the export.');
       return;
     }
@@ -566,9 +586,12 @@ export class DataQueryComponent implements OnInit {
 
     const selectedFormats = this.selectedExportFormats;
     if (selectedFormats.length === 0) {
+      this.openEmailSettingsMenu();
       this.setExportFeedback('error', 'Select at least one file format before downloading or emailing the export.');
       return;
     }
+
+    this.emailSettingsTrigger?.closeMenu();
 
     const activeTab = this.queryTabs[this.selectedTabIndex];
     const activeColDefs = activeTab.colDefs || this.colDefs;
@@ -657,6 +680,11 @@ export class DataQueryComponent implements OnInit {
 
   private clearExportFeedback() {
     this.exportFeedback = null;
+  }
+
+  private openEmailSettingsMenu() {
+    this.isEmailConfigOpen = true;
+    this.emailSettingsTrigger?.openMenu();
   }
 
   private syncExportContext() {

@@ -1,0 +1,6 @@
+{"file": ".agents/skills/finish-work/SKILL.md", "reason": "Finish work checklist"}
+{"file": ".agents/skills/check-backend/SKILL.md", "reason": "Backend check spec"}
+{"file": ".agents/skills/check-frontend/SKILL.md", "reason": "Frontend check spec"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "Confirm the refactor reuses existing parsing and does not create avoidable duplication."}
+{"file": "frontend-monorepo/README.md", "reason": "Ensure the documented runtime contract matches the implemented env parsing."}
+{"file": ".trellis/spec/frontend/quality-guidelines.md", "reason": "Review runtime config changes and required validation steps."}

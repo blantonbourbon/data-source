@@ -1,0 +1,8 @@
+{"file": ".trellis/workflow.md", "reason": "Project workflow and conventions"}
+{"file": ".trellis/spec/frontend/index.md", "reason": "Frontend development guide"}
+{"file": ".trellis/spec/frontend/component-guidelines.md", "reason": "The task changes Angular templates and colocated SCSS in shared and feature components."}
+{"file": ".trellis/spec/frontend/state-management.md", "reason": "The export UI state should remain local to DataQueryComponent."}
+{"file": "frontend-monorepo/projects/multi-module-app/src/app/shared/components/query-builder/query-builder.component.scss", "reason": "Reduce advanced-search density without changing the shared component contract."}
+{"file": ".trellis/spec/frontend/quality-guidelines.md", "reason": "Use targeted frontend verification for the adjusted export behavior."}
+{"file": "frontend-monorepo/projects/multi-module-app/src/app/features/data-query/data-query.component.ts", "reason": "Keep export behavior intact while introducing standalone config UI state."}
+{"file": "frontend-monorepo/projects/multi-module-app/src/app/features/data-query/data-query.component.html", "reason": "Reshape the result-tools and email export layout while keeping the current actions."}

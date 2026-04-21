@@ -1,0 +1,7 @@
+{"file": ".trellis/workflow.md", "reason": "Project workflow and conventions"}
+{"file": ".trellis/spec/backend/index.md", "reason": "Backend development guide"}
+{"file": ".trellis/spec/frontend/index.md", "reason": "Frontend development guide"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "This env contract affects frontend runtime config, nginx proxy headers, and backend auth callback resolution."}
+{"file": "frontend-monorepo/docker/entrypoint.sh", "reason": "Follow the existing validation, export, and generated-nginx-config pattern in the runtime entrypoint."}
+{"file": ".trellis/spec/frontend/quality-guidelines.md", "reason": "Verify frontend runtime config and docs remain consistent and testable."}
+{"file": "panel/docs/security/dual-chain-spring-security.md", "reason": "Keep forwarded header behavior aligned with the backend security deployment expectations."}

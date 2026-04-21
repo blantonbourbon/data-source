@@ -1,0 +1,7 @@
+{"file": ".trellis/workflow.md", "reason": "Project workflow and conventions"}
+{"file": ".trellis/spec/backend/index.md", "reason": "Backend development guide"}
+{"file": ".trellis/spec/backend/error-handling.md", "reason": "Auth/profile behavior should stay explicit for local vs non-local security responses."}
+{"file": ".trellis/spec/backend/quality-guidelines.md", "reason": "This task changes local profile behavior verification and needs integration-level tests."}
+{"file": "panel/src/main/resources/data.sql", "reason": "Seed stable local mock rows for the frontend query modules."}
+{"file": "panel/src/test/java/com/data/service/core/security/LocalProfileStartupTest.java", "reason": "Verify local auth-disabled mode and non-empty frontend-facing query endpoints."}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "The frontend depends on backend auth/session and query data contracts in local mode."}

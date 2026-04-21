@@ -1,0 +1,4 @@
+{"file": ".agents/skills/finish-work/SKILL.md", "reason": "Finish work checklist"}
+{"file": ".agents/skills/check-backend/SKILL.md", "reason": "Backend check spec"}
+{"file": ".trellis/spec/backend/quality-guidelines.md", "reason": "Review local-profile auth and seed-data behavior at the integration level."}
+{"file": "panel/src/test/java/com/data/service/core/security/LocalProfileStartupTest.java", "reason": "Keep the local-profile regression test aligned with the frontend-facing local-dev contract."}
