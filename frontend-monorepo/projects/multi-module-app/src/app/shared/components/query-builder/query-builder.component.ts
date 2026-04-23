@@ -91,6 +91,8 @@ export class QueryBuilderComponent implements OnInit, OnChanges {
         if (this.isRangeField(field)) {
           advancedControls[`${field.name}_start`] = new FormControl(null);
           advancedControls[`${field.name}_end`] = new FormControl(null);
+        } else if (field.type === 'dropdown') {
+          advancedControls[field.name] = new FormControl<string[]>([]);
         } else if (field.type === 'checkbox') {
           if ((field.checkboxOptions?.length ?? 0) > 0) {
             advancedControls[field.name] = new FormControl<string[]>([]);
@@ -181,7 +183,14 @@ export class QueryBuilderComponent implements OnInit, OnChanges {
         }
       } else {
         const val = advancedValues[field.name];
-        if (field.type === 'checkbox') {
+        if (field.type === 'dropdown') {
+          const selectedValues = Array.isArray(val) ? val.map(item => item.trim()).filter(item => item !== '') : [];
+          if (selectedValues.length === 1) {
+            conditions.push({ field: field.name, operator: '=', value: selectedValues[0] });
+          } else if (selectedValues.length > 1) {
+            conditions.push({ field: field.name, operator: 'IN', value: selectedValues.join(',') });
+          }
+        } else if (field.type === 'checkbox') {
           if ((field.checkboxOptions?.length ?? 0) > 0) {
             const selectedValues = Array.isArray(val) ? val.map(item => item.trim()).filter(item => item !== '') : [];
             if (selectedValues.length === 1) {
@@ -252,6 +261,10 @@ export class QueryBuilderComponent implements OnInit, OnChanges {
       }
 
       const value = advancedValues[field.name];
+      if (field.type === 'dropdown') {
+        return Array.isArray(value) && value.length > 0 ? count + 1 : count;
+      }
+
       if (field.type === 'checkbox') {
         if ((field.checkboxOptions?.length ?? 0) > 0) {
           return Array.isArray(value) && value.length > 0 ? count + 1 : count;
