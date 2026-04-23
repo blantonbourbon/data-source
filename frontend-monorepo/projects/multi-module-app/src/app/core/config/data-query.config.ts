@@ -1,6 +1,6 @@
 import { ColDef } from 'ag-grid-community';
 
-export type FilterFieldType = 'string' | 'number' | 'date' | 'time' | 'checkbox';
+export type FilterFieldType = 'string' | 'number' | 'date' | 'time' | 'checkbox' | 'dropdown';
 
 import { ModuleDefinition } from '../models/auth.models';
 
@@ -9,6 +9,7 @@ export interface FilterField {
   label: string;
   type: FilterFieldType;
   checkboxOptions?: Array<{ label: string; value: string }>;
+  dropdownOptions?: Array<{ label: string; value: string }>;
   group?: string;
   gridSpan?: 3 | 4 | 6 | 12;
   placeholder?: string;

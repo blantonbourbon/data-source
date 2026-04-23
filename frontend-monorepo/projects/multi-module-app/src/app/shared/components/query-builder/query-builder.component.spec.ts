@@ -106,4 +106,30 @@ describe('QueryBuilderComponent', () => {
     component.applyAdvancedFilters();
     expect(emitSpy).toHaveBeenCalledWith([{ field: 'msgdirection', operator: 'IN', value: 'in,out' }]);
   });
+
+  it('maps dropdown multi-select values to query conditions', () => {
+    component.availableFields = [
+      {
+        name: 'status',
+        label: 'Status',
+        type: 'dropdown',
+        dropdownOptions: [
+          { label: 'Open', value: 'open' },
+          { label: 'Closed', value: 'closed' }
+        ]
+      }
+    ];
+    component.initForm();
+    const emitSpy = spyOn(component.querySubmit, 'emit');
+
+    component.advancedForm.patchValue({ status: ['open'] });
+    component.applyAdvancedFilters();
+    expect(emitSpy).toHaveBeenCalledWith([{ field: 'status', operator: '=', value: 'open' }]);
+
+    emitSpy.calls.reset();
+    component.clearAdvancedFilters();
+    component.advancedForm.patchValue({ status: ['open', 'closed'] });
+    component.applyAdvancedFilters();
+    expect(emitSpy).toHaveBeenCalledWith([{ field: 'status', operator: 'IN', value: 'open,closed' }]);
+  });
 });
