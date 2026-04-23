@@ -151,11 +151,7 @@
                       <mat-form-field appearance="outline" subscriptSizing="dynamic">
                         <mat-select [formControlName]="field.name" multiple [attr.aria-label]="field.label" [placeholder]="field.label">
                           @for (option of field.dropdownOptions ?? []; track option.value) {
-                            <mat-option [value]="option.value">
-                              <mat-checkbox [checked]="isCheckboxOptionSelected(field, option.value)">
-                                {{ option.label }}
-                              </mat-checkbox>
-                            </mat-option>
+                            <mat-option [value]="option.value">{{ option.label }}</mat-option>
                           }
                         </mat-select>
                       </mat-form-field>

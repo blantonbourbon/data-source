@@ -1,4 +1,7 @@
+import { OverlayContainer } from '@angular/cdk/overlay';
 import { FormBuilder } from '@angular/forms';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { ComponentFixture, TestBed, fakeAsync, flush } from '@angular/core/testing';
 
 import { QueryBuilderComponent } from './query-builder.component';
 
@@ -143,4 +146,54 @@ describe('QueryBuilderComponent', () => {
     component.applyAdvancedFilters();
     expect(emitSpy).toHaveBeenCalledWith([{ field: 'status', operator: 'IN', value: 'open,closed' }]);
   });
+});
+
+describe('QueryBuilderComponent DOM', () => {
+  let fixture: ComponentFixture<QueryBuilderComponent>;
+  let overlayContainer: OverlayContainer;
+  let overlayContainerElement: HTMLElement;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      imports: [QueryBuilderComponent, NoopAnimationsModule]
+    });
+
+    overlayContainer = TestBed.inject(OverlayContainer);
+    overlayContainerElement = overlayContainer.getContainerElement();
+
+    fixture = TestBed.createComponent(QueryBuilderComponent);
+    fixture.componentInstance.availableFields = [
+      {
+        name: 'status',
+        label: 'Status',
+        type: 'dropdown',
+        dropdownOptions: [
+          { label: 'Open', value: 'open' },
+          { label: 'Closed', value: 'closed' }
+        ]
+      }
+    ];
+    fixture.componentInstance.isAdvancedOpen = true;
+    fixture.detectChanges();
+  });
+
+  afterEach(() => {
+    overlayContainer.ngOnDestroy();
+  });
+
+  it('renders dropdown options without nested material checkboxes', fakeAsync(() => {
+    const hostElement = fixture.nativeElement as HTMLElement;
+    const trigger = hostElement.querySelector('.mat-mdc-select-trigger') as HTMLElement | null;
+
+    expect(trigger).not.toBeNull();
+
+    trigger?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    fixture.detectChanges();
+    flush();
+    fixture.detectChanges();
+
+    expect(overlayContainerElement.querySelectorAll('mat-option').length).toBe(2);
+    expect(overlayContainerElement.querySelectorAll('mat-checkbox').length).toBe(0);
+    expect(overlayContainerElement.querySelectorAll('.mat-pseudo-checkbox').length).toBe(2);
+  }));
 });

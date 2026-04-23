@@ -124,9 +124,12 @@ $input-height: 40px;
     position: absolute;
     top: calc(100% + 10px);
     left: 0;
-    right: 0;
+    right: auto;
     z-index: 20;
-    width: min(860px, calc(100vw - 48px));
+    width: fit-content;
+    max-width: calc(100vw - 48px);
+    box-sizing: border-box;
+    overflow-x: auto;
     display: flex;
     flex-direction: column;
     gap: 16px;
@@ -218,6 +221,8 @@ $input-height: 40px;
   .advanced-groups {
     display: grid;
     grid-template-columns: repeat(2, minmax(280px, 1fr));
+    width: max-content;
+    max-width: 100%;
     gap: 12px;
   }
 
@@ -400,6 +405,11 @@ $input-height: 40px;
       left: -2px;
       right: -2px;
       padding: 16px;
+    }
+
+    .advanced-groups {
+      width: auto;
+      max-width: none;
     }
 
     .advanced-panel-header {
