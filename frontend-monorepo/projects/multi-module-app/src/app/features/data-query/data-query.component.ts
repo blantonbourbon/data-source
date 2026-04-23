@@ -139,6 +139,7 @@ export class DataQueryComponent implements OnInit {
     sortable: false
   };
   allData: any[] = [];
+  fieldValueOptions: Record<string, string[]> = {};
   queryTabs: QueryTab[] = [];
   selectedTabIndex = 0;
   tabCounter = 1;
@@ -181,6 +182,7 @@ export class DataQueryComponent implements OnInit {
     this.http.get<any[]>(this.config.apiEndpoint).subscribe({
       next: data => {
         this.allData = data || [];
+        this.fieldValueOptions = this.buildFieldValueOptions(this.allData);
         setTimeout(() => {
           this.queryTabs[0].title = 'All Data';
           this.queryTabs[0].dataSource = this.allData;
@@ -225,6 +227,7 @@ export class DataQueryComponent implements OnInit {
     this.http.post<any[]>(this.config.apiEndpoint + '/query', queryPayload).subscribe({
       next: data => {
         const result = data || [];
+        this.fieldValueOptions = this.buildFieldValueOptions(result);
         setTimeout(() => {
           this.queryTabs[newTabIndex].title = title;
           this.queryTabs[newTabIndex].dataSource = result;
@@ -268,6 +271,7 @@ export class DataQueryComponent implements OnInit {
         });
 
         setTimeout(() => {
+          this.fieldValueOptions = this.buildFieldValueOptions(filtered);
           this.queryTabs[newTabIndex].title = title + ' (Local)';
           this.queryTabs[newTabIndex].dataSource = filtered;
           if (this.gridApi && this.selectedTabIndex === newTabIndex) {
@@ -872,6 +876,33 @@ export class DataQueryComponent implements OnInit {
     anchor.download = fileName;
     anchor.click();
     window.URL.revokeObjectURL(objectUrl);
+  }
+
+  private buildFieldValueOptions(rows: any[]): Record<string, string[]> {
+    const optionMap: Record<string, string[]> = {};
+
+    (this.config?.filterFields ?? []).forEach(field => {
+      if (field.type !== 'checkbox') {
+        return;
+      }
+
+      const uniqueValues = new Set<string>();
+      rows.forEach(row => {
+        const rawValue = row?.[field.name];
+        if (rawValue == null) {
+          return;
+        }
+
+        const value = String(rawValue).trim();
+        if (value !== '') {
+          uniqueValues.add(value);
+        }
+      });
+
+      optionMap[field.name] = Array.from(uniqueValues);
+    });
+
+    return optionMap;
   }
 
   private blobToBase64(blob: Blob): Promise<string> {

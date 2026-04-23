@@ -106,4 +106,15 @@ describe('QueryBuilderComponent', () => {
     component.applyAdvancedFilters();
     expect(emitSpy).toHaveBeenCalledWith([{ field: 'msgdirection', operator: 'IN', value: 'in,out' }]);
   });
+
+  it('uses field value options from endpoint results for checkbox dropdown', () => {
+    component.availableFields = [{ name: 'msgdirection', label: 'Message Direction', type: 'checkbox' }];
+    component.fieldValueOptions = { msgdirection: ['in', 'out'] };
+    component.initForm();
+
+    expect(component.getCheckboxOptions(component.availableFields[0])).toEqual([
+      { label: 'in', value: 'in' },
+      { label: 'out', value: 'out' }
+    ]);
+  });
 });

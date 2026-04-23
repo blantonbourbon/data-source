@@ -57,6 +57,7 @@ interface FieldGroupViewModel {
 })
 export class QueryBuilderComponent implements OnInit, OnChanges {
   @Input() availableFields: FilterField[] = [];
+  @Input() fieldValueOptions: Record<string, string[]> = {};
   @Output() querySubmit = new EventEmitter<QueryCondition[]>();
 
   queryForm!: FormGroup;
@@ -314,6 +315,15 @@ export class QueryBuilderComponent implements OnInit, OnChanges {
   isCheckboxOptionSelected(field: FilterField, optionValue: string): boolean {
     const controlValue = this.advancedForm.get(field.name)?.value;
     return Array.isArray(controlValue) && controlValue.includes(optionValue);
+  }
+
+  getCheckboxOptions(field: FilterField): Array<{ label: string; value: string }> {
+    const values = this.fieldValueOptions[field.name];
+    if (Array.isArray(values) && values.length > 0) {
+      return values.map(value => ({ label: value, value }));
+    }
+
+    return field.checkboxOptions ?? [];
   }
 
   private parseTimeParts(value: string): [number, number, number] | null {
