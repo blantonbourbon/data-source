@@ -1,8 +1,8 @@
 package com.data.service.core.security;
 
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -10,11 +10,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.oauth2.client.web.AuthorizationRequestRepository;
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
+import org.springframework.security.oauth2.client.web.AuthorizationRequestRepository;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
+import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
@@ -97,7 +102,8 @@ public class SecurityConfiguration {
                                                        ReturnUrlAuthenticationSuccessHandler successHandler,
                                                        ReturnUrlAuthenticationFailureHandler failureHandler,
                                                        LogoutSuccessHandler logoutSuccessHandler,
-                                                       OAuth2UserService<OAuth2UserRequest, OAuth2User> oauth2UserService) throws Exception {
+                                                       OAuth2UserService<OAuth2UserRequest, OAuth2User> oauth2UserService,
+                                                       OAuth2UserService<OidcUserRequest, OidcUser> oidcUserService) throws Exception {
         http.securityMatcher("/api/user/**", "/api/me", "/api/auth/**", "/oauth2/**", "/login/oauth2/**", "/h2-console/**")
                 .authorizeHttpRequests(authorize -> {
                     authorize.requestMatchers("/api/auth/login", "/api/auth/logout", "/oauth2/**", "/login/oauth2/**")
@@ -111,7 +117,9 @@ public class SecurityConfiguration {
                         .authorizationEndpoint(authorizationEndpoint ->
                                 authorizationEndpoint
                                         .authorizationRequestRepository(authorizationRequestRepository))
-                        .userInfoEndpoint(userInfo -> userInfo.userService(oauth2UserService))
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(oauth2UserService)
+                                .oidcUserService(oidcUserService))
                         .successHandler(successHandler)
                         .failureHandler(failureHandler))
                 .logout(logout -> logout
@@ -150,20 +158,57 @@ public class SecurityConfiguration {
     @Bean
     OAuth2UserService<OAuth2UserRequest, OAuth2User> oauth2UserService(BackendUserContextMapper userContextMapper) {
         DefaultOAuth2UserService delegate = new DefaultOAuth2UserService();
-        return userRequest -> {
-            OAuth2User user = delegate.loadUser(userRequest);
-            Set<GrantedAuthority> authorities = new LinkedHashSet<>(user.getAuthorities());
-            authorities.addAll(userContextMapper.toGrantedAuthorities(user.getAttributes()));
+        return userRequest -> withMappedOAuth2Authorities(
+                userRequest,
+                delegate.loadUser(userRequest),
+                userContextMapper
+        );
+    }
 
-            String userNameAttributeName = userRequest.getClientRegistration()
-                    .getProviderDetails()
-                    .getUserInfoEndpoint()
-                    .getUserNameAttributeName();
-            if (userNameAttributeName == null || userNameAttributeName.isBlank()) {
-                userNameAttributeName = "sub";
-            }
+    @Bean
+    OAuth2UserService<OidcUserRequest, OidcUser> oidcUserService(BackendUserContextMapper userContextMapper) {
+        OidcUserService delegate = new OidcUserService();
+        return userRequest -> withMappedOidcAuthorities(
+                userRequest,
+                delegate.loadUser(userRequest),
+                userContextMapper
+        );
+    }
 
-            return new DefaultOAuth2User(authorities, user.getAttributes(), userNameAttributeName);
-        };
+    static OAuth2User withMappedOAuth2Authorities(OAuth2UserRequest userRequest,
+                                                  OAuth2User user,
+                                                  BackendUserContextMapper userContextMapper) {
+        Set<GrantedAuthority> authorities = new LinkedHashSet<>(user.getAuthorities());
+        authorities.addAll(userContextMapper.toGrantedAuthorities(user.getAttributes()));
+
+        return new DefaultOAuth2User(
+                authorities,
+                user.getAttributes(),
+                resolveUserNameAttributeName(userRequest.getClientRegistration())
+        );
+    }
+
+    static OidcUser withMappedOidcAuthorities(OidcUserRequest userRequest,
+                                              OidcUser user,
+                                              BackendUserContextMapper userContextMapper) {
+        Set<GrantedAuthority> authorities = new LinkedHashSet<>(user.getAuthorities());
+        authorities.addAll(userContextMapper.toGrantedAuthorities(user.getClaims()));
+
+        String userNameAttributeName = resolveUserNameAttributeName(userRequest.getClientRegistration());
+        if (user.getUserInfo() == null) {
+            return new DefaultOidcUser(authorities, user.getIdToken(), userNameAttributeName);
+        }
+
+        return new DefaultOidcUser(authorities, user.getIdToken(), user.getUserInfo(), userNameAttributeName);
+    }
+
+    private static String resolveUserNameAttributeName(ClientRegistration clientRegistration) {
+        String userNameAttributeName = clientRegistration.getProviderDetails()
+                .getUserInfoEndpoint()
+                .getUserNameAttributeName();
+        if (userNameAttributeName == null || userNameAttributeName.isBlank()) {
+            return "sub";
+        }
+        return userNameAttributeName;
     }
 }
