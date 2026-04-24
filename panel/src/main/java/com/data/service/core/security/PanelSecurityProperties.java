@@ -15,6 +15,7 @@ public class PanelSecurityProperties {
     private String frontendBaseUrl;
     private final PingFederate pingFederate = new PingFederate();
     private final ClaimMapping claimMapping = new ClaimMapping();
+    private final Entitlements entitlements = new Entitlements();
     private final LocalDev localDev = new LocalDev();
     private final List<ApplicationClient> applicationClients = new ArrayList<>();
 
@@ -40,6 +41,10 @@ public class PanelSecurityProperties {
 
     public ClaimMapping getClaimMapping() {
         return claimMapping;
+    }
+
+    public Entitlements getEntitlements() {
+        return entitlements;
     }
 
     public LocalDev getLocalDev() {
@@ -184,6 +189,42 @@ public class PanelSecurityProperties {
 
         public Map<String, String> getClaims() {
             return claims;
+        }
+    }
+
+    public static class Entitlements {
+        private String environment = "local";
+        private String groupPrefix = "acl_service";
+        private final Map<String, List<String>> roleActions = new LinkedHashMap<>();
+
+        public Entitlements() {
+            roleActions.put("reader", List.of("read"));
+            roleActions.put("writer", List.of("read", "write"));
+            roleActions.put("editor", List.of("read", "write"));
+            roleActions.put("exporter", List.of("export"));
+            roleActions.put("deleter", List.of("delete"));
+            roleActions.put("admin", List.of("read", "write", "delete", "export"));
+            roleActions.put("owner", List.of("read", "write", "delete", "export"));
+        }
+
+        public String getEnvironment() {
+            return environment;
+        }
+
+        public void setEnvironment(String environment) {
+            this.environment = environment;
+        }
+
+        public String getGroupPrefix() {
+            return groupPrefix;
+        }
+
+        public void setGroupPrefix(String groupPrefix) {
+            this.groupPrefix = groupPrefix;
+        }
+
+        public Map<String, List<String>> getRoleActions() {
+            return roleActions;
         }
     }
 

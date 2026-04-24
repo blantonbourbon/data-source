@@ -105,6 +105,20 @@ class SecurityIntegrationTest {
     }
 
     @Test
+    void authenticatedUserWithMatchingGroupCanLoadUserEntity() throws Exception {
+        mockMvc.perform(get("/api/user/trades").with(oauth2Login().attributes(attributes ->
+                        attributes.put("groups", List.of("acl_service_test_trades_reader")))))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void authenticatedUserWithDifferentEnvironmentGroupCannotLoadUserEntity() throws Exception {
+        mockMvc.perform(get("/api/user/trades").with(oauth2Login().attributes(attributes ->
+                        attributes.put("groups", List.of("acl_service_prod_trades_reader")))))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     void authenticatedUserCanLoadNormalizedCurrentUserContext() throws Exception {
         mockMvc.perform(get("/api/me").with(oauth2Login().attributes(attributes -> {
                     attributes.put("sub", "user-123");
@@ -129,7 +143,8 @@ class SecurityIntegrationTest {
     @Test
     void authenticatedUserCanSubmitExportEmailRequest() throws Exception {
         mockMvc.perform(post("/api/user/trades/export/email")
-                        .with(oauth2Login())
+                        .with(oauth2Login().attributes(attributes ->
+                                attributes.put("groups", List.of("acl_service_test_trades_exporter"))))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(validExportEmailPayload()))
                 .andExpect(status().isAccepted())

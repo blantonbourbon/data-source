@@ -67,7 +67,8 @@ public class TradeMetricTest {
                 new SearchCriteria("tradeType", SearchOperation.EQUALITY, "SPOT")));
 
         mockMvc.perform(post("/api/user/trades/metric")
-                .with(oauth2Login())
+                .with(oauth2Login()
+                        .attributes(attributes -> attributes.put("groups", List.of("acl_service_test_trades_reader"))))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -82,7 +83,8 @@ public class TradeMetricTest {
                 new SearchCriteria("amount", SearchOperation.GREATER_THAN, 150.0)));
 
         mockMvc.perform(post("/api/user/trades/metric")
-                .with(oauth2Login())
+                .with(oauth2Login()
+                        .attributes(attributes -> attributes.put("groups", List.of("acl_service_test_trades_reader"))))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())

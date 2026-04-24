@@ -64,7 +64,8 @@ class CryptoAssetIntegrationTest {
     @Test
     void testRestfulServiceReturnsCryptoAssets() throws Exception {
         mockMvc.perform(get("/api/user/cryptoassets")
-                .with(oauth2Login())
+                .with(oauth2Login()
+                        .attributes(attributes -> attributes.put("groups", List.of("acl_service_test_cryptoassets_reader"))))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))

@@ -6,6 +6,7 @@ import com.data.service.core.service.GenericService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -21,12 +22,14 @@ public abstract class GenericEntityController {
     private final ObjectMapper objectMapper;
 
     @GetMapping
+    @PreAuthorize("@entitlementService.canAccess(authentication, #p0, 'read')")
     public ResponseEntity<?> getAll(@PathVariable String entity) {
         GenericService service = getServiceOrThrow(entity);
         return ResponseEntity.ok(service.findAll());
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("@entitlementService.canAccess(authentication, #p0, 'read')")
     public ResponseEntity<?> getById(@PathVariable String entity, @PathVariable Long id) {
         GenericService service = getServiceOrThrow(entity);
         Object result = service.findById(id);
@@ -34,6 +37,7 @@ public abstract class GenericEntityController {
     }
 
     @PostMapping
+    @PreAuthorize("@entitlementService.canAccess(authentication, #p0, 'write')")
     public ResponseEntity<?> create(@PathVariable String entity, @RequestBody Map<String, Object> body) {
         GenericService service = getServiceOrThrow(entity);
         Object model = objectMapper.convertValue(body, service.getModelClass());
@@ -42,6 +46,7 @@ public abstract class GenericEntityController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("@entitlementService.canAccess(authentication, #p0, 'delete')")
     public ResponseEntity<Void> delete(@PathVariable String entity, @PathVariable Long id) {
         getServiceOrThrow(entity);
         registry.getService(entity).deleteById(id);
@@ -49,12 +54,14 @@ public abstract class GenericEntityController {
     }
 
     @PostMapping("/metric")
+    @PreAuthorize("@entitlementService.canAccess(authentication, #p0, 'read')")
     public ResponseEntity<?> getMetric(@PathVariable String entity, @RequestBody MetricRequest request) {
         GenericService service = getServiceOrThrow(entity);
         return ResponseEntity.ok(service.getMetric(request));
     }
 
     @PostMapping("/query")
+    @PreAuthorize("@entitlementService.canAccess(authentication, #p0, 'read')")
     public ResponseEntity<?> query(@PathVariable String entity, @RequestBody SearchRequest request) {
         GenericService service = getServiceOrThrow(entity);
         return ResponseEntity.ok(service.query(request));
