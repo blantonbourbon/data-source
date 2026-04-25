@@ -30,7 +30,7 @@ Document reality, not target-state architecture. If the codebase and these docs 
 3. If the change affects auth, redirects, or frontend contracts, also read `.trellis/spec/frontend/` and the cross-layer guide.
 4. For local backend work, prefer the `local` profile:
    - `cd panel && ./gradlew bootRun --args='--spring.profiles.active=local'`
-   - `panel/src/main/resources/application-local.properties` currently sets `panel.security.local-dev.auth-disabled=true`
+   - `panel/src/main/resources/application-local.yaml` currently sets `panel.security.local-dev.auth-disabled=true`
 
 ---
 
@@ -52,7 +52,7 @@ Document reality, not target-state architecture. If the codebase and these docs 
 - Match the generic entity pipeline unless there is a clear reason to diverge: entity/model -> mapper -> repository -> registry -> generic service -> controller.
 - Keep security-specific behavior inside `panel/src/main/java/com/data/service/core/security/`, not mixed into generic CRUD packages.
 - Preserve the generated/manual split established by `panel/gradle/code-gen.gradle`. Generated base classes are disposable; hand-written extension points are not.
-- Treat `application-local.properties`, `application-test.properties`, and `application-prod.properties` as part of the backend contract. Profile behavior is tested and should not drift silently.
+- Treat `application-local.yaml`, `application-test.yaml`, and `application-prod.yaml` as part of the backend contract. Profile behavior is tested and should not drift silently.
 
 ---
 

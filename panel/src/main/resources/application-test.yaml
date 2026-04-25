@@ -1,0 +1,44 @@
+spring:
+  h2:
+    console:
+      enabled: true
+  security:
+    oauth2:
+      client:
+        registration:
+          pingfed:
+            client-id: test-client
+            client-secret: test-secret
+            authorization-grant-type: authorization_code
+            redirect-uri: "${PINGFED_REDIRECT_URI:{baseUrl}/login/oauth2/code/{registrationId}}"
+            scope:
+              - openid
+              - profile
+              - email
+        provider:
+          pingfed:
+            authorization-uri: https://pingfed.example.test/as/authorization.oauth2
+            token-uri: https://pingfed.example.test/as/token.oauth2
+            user-info-uri: https://pingfed.example.test/idp/userinfo.openid
+            user-name-attribute: sub
+
+server:
+  ssl:
+    client-auth: want
+  servlet:
+    session:
+      cookie:
+        secure: false
+
+panel:
+  security:
+    h2-console-enabled: true
+    application-clients:
+      - name: grafana
+        certificate-cn: grafana-test
+        authorities:
+          - ROLE_APP_GRAFANA
+        claims:
+          environment: test
+    entitlements:
+      environment: test

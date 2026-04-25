@@ -39,7 +39,7 @@ There is currently no Flyway or Liquibase setup. Treat SQL bootstrap files and e
 
 - Baseline schema lives in `panel/src/main/resources/schema.sql`
 - Seed/sample data lives in `panel/src/main/resources/data.sql`
-- Profile-specific behavior is controlled through `application.properties`, `application-local.properties`, `application-test.properties`, and `application-prod.properties`
+- Profile-specific behavior is controlled through `application.yaml`, `application-local.yaml`, `application-test.yaml`, and `application-prod.yaml`
 - Entity scaffolding is generated from `panel/src/main/resources/entity-model.yaml` via `panel/gradle/code-gen.gradle`
 
 When adding or changing a persistent entity, update the following together:

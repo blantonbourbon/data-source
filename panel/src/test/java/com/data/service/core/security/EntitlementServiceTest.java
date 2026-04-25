@@ -24,13 +24,13 @@ class EntitlementServiceTest {
     }
 
     @Test
-    void rawOauthGroupClaimGrantsMatchingEntityReadAccess() {
+    void configuredEntityGroupGrantsMappedRouteEntityReadAccess() {
         EntitlementService service = entitlementService("qa");
         OAuth2User principal = new DefaultOAuth2User(
                 List.of(),
                 Map.of(
                         "sub", "user-123",
-                        "groups", List.of("acl_service_qa_cryptoassets_reader")
+                        "groups", List.of("acl_service_qa_crypto_assets_reader")
                 ),
                 "sub"
         );
@@ -41,6 +41,14 @@ class EntitlementServiceTest {
         );
 
         assertThat(service.canAccess(authentication, "cryptoassets", "read")).isTrue();
+    }
+
+    @Test
+    void unconfiguredEntityFallsBackToRouteEntityName() {
+        EntitlementService service = entitlementService("qa");
+        Authentication authentication = authentication("GROUP_ACL_SERVICE_QA_REPORTS_READER");
+
+        assertThat(service.canAccess(authentication, "reports", "read")).isTrue();
     }
 
     @Test

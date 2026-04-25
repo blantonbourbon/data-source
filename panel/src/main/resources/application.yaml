@@ -1,0 +1,50 @@
+spring:
+  application:
+    name: core
+  profiles:
+    default: local
+  h2:
+    console:
+      enabled: false
+      path: /h2-console
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driverClassName: org.h2.Driver
+    username: sa
+    password: password
+  jpa:
+    hibernate:
+      ddl-auto: none
+  sql:
+    init:
+      mode: always
+
+server:
+  forward-headers-strategy: framework
+  servlet:
+    session:
+      cookie:
+        http-only: true
+        same-site: lax
+
+panel:
+  security:
+    h2-console-enabled: false
+    ping-federate:
+      registration-id: pingfed
+      logout-success-url: /
+    frontend-base-url: "${PANEL_SECURITY_FRONTEND_BASE_URL:}"
+    claim-mapping:
+      username-claim: preferred_username
+      display-name-claim: name
+      email-claim: email
+      groups-claim: groups
+      entitlements-claim: entitlements
+      permissions-claim: permissions
+      data-scopes-claim: data_scopes
+    entitlements:
+      environment: "${PANEL_SECURITY_ENVIRONMENT:local}"
+      group-prefix: acl_service
+      entity-groups:
+        trades: trades
+        cryptoassets: crypto_assets

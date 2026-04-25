@@ -39,7 +39,7 @@ Run at minimum:
 - Keep dynamic entity behavior inside `EntityRegistry`, `GenericService`, repositories, and mappers.
 - When adding a new scaffolded entity, update the full chain:
   `entity-model.yaml` -> generated artifacts -> `schema.sql`/`data.sql` -> tests
-- Keep local, test, and prod profile behavior explicit in properties files and covered by tests where the behavior matters.
+- Keep local, test, and prod profile behavior explicit in YAML config files and covered by tests where the behavior matters.
 
 ---
 

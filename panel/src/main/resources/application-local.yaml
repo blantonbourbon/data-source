@@ -1,0 +1,57 @@
+spring:
+  h2:
+    console:
+      enabled: true
+  security:
+    oauth2:
+      client:
+        registration:
+          pingfed:
+            client-id: "${PINGFED_CLIENT_ID:local-client}"
+            client-secret: "${PINGFED_CLIENT_SECRET:local-secret}"
+            authorization-grant-type: authorization_code
+            redirect-uri: "${PINGFED_REDIRECT_URI:{baseUrl}/login/oauth2/code/{registrationId}}"
+            scope:
+              - openid
+              - profile
+              - email
+        provider:
+          pingfed:
+            authorization-uri: "${PINGFED_AUTHORIZATION_URI:https://pingfed.local.example/as/authorization.oauth2}"
+            token-uri: "${PINGFED_TOKEN_URI:https://pingfed.local.example/as/token.oauth2}"
+            user-info-uri: "${PINGFED_USER_INFO_URI:https://pingfed.local.example/idp/userinfo.openid}"
+            user-name-attribute: "${PINGFED_USERNAME_ATTRIBUTE:sub}"
+
+server:
+  ssl:
+    enabled: false
+    client-auth: want
+  servlet:
+    session:
+      cookie:
+        secure: false
+
+panel:
+  security:
+    h2-console-enabled: true
+    local-dev:
+      auth-disabled: true
+      id: local-dev-user
+      username: local-dev
+      display-name: Local Developer
+      email: local.dev@example.test
+      permissions:
+        - module:xms:read
+        - module:xms:export
+        - module:libra:read
+      claims:
+        environment: local
+    entitlements:
+      environment: "${PANEL_SECURITY_ENVIRONMENT:local}"
+    application-clients:
+      - name: "${GRAFANA_CLIENT_NAME:grafana}"
+        certificate-cn: "${GRAFANA_CERT_CN:grafana-local}"
+        authorities:
+          - ROLE_APP_GRAFANA
+        claims:
+          environment: local

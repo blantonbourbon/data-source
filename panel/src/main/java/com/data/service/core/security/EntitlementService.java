@@ -38,7 +38,7 @@ public class EntitlementService {
             return true;
         }
 
-        String normalizedEntity = normalizeToken(entity);
+        String normalizedEntity = resolveConfiguredEntityGroup(entity);
         String normalizedAction = normalizeToken(action);
         if (normalizedEntity.isEmpty() || normalizedAction.isEmpty()) {
             return false;
@@ -136,6 +136,28 @@ public class EntitlementService {
                 .filter(value -> !value.isEmpty())
                 .distinct()
                 .toList();
+    }
+
+    private String resolveConfiguredEntityGroup(String entity) {
+        String routeEntity = entity == null ? "" : entity.trim();
+        if (routeEntity.isEmpty()) {
+            return "";
+        }
+
+        Map<String, String> entityGroups = securityProperties.getEntitlements().getEntityGroups();
+        String configuredGroup = entityGroups.get(routeEntity);
+        if (configuredGroup == null) {
+            configuredGroup = entityGroups.get(routeEntity.toLowerCase(Locale.ROOT));
+        }
+        if (configuredGroup == null) {
+            configuredGroup = entityGroups.entrySet().stream()
+                    .filter(entry -> normalizeToken(entry.getKey()).equals(normalizeToken(routeEntity)))
+                    .map(Map.Entry::getValue)
+                    .findFirst()
+                    .orElse(routeEntity);
+        }
+
+        return normalizeToken(configuredGroup);
     }
 
     private List<String> normalizeStringList(Object value) {

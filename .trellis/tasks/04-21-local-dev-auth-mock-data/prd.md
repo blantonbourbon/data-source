@@ -23,7 +23,7 @@ Make local frontend testing easier by relying on the existing local no-OIDC back
   - `panel/src/test/java/com/data/service/core/security/LocalProfileStartupTest.java`
   - optional local-dev docs if needed
 - Current repo reality:
-  - `panel/src/main/resources/application-local.properties` already sets `panel.security.local-dev.auth-disabled=true`
+  - `panel/src/main/resources/application-local.yaml` already sets `panel.security.local-dev.auth-disabled=true`
   - `CurrentUserController` already returns the configured local-dev mock user from `/api/me`
   - `AuthController` already skips the OIDC redirect when local auth is disabled
 - Assumption:

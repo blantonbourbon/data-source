@@ -1,0 +1,44 @@
+spring:
+  h2:
+    console:
+      enabled: false
+  security:
+    oauth2:
+      client:
+        registration:
+          pingfed:
+            client-id: "${PINGFED_CLIENT_ID}"
+            client-secret: "${PINGFED_CLIENT_SECRET}"
+            authorization-grant-type: authorization_code
+            redirect-uri: "${PINGFED_REDIRECT_URI:{baseUrl}/login/oauth2/code/{registrationId}}"
+            scope:
+              - openid
+              - profile
+              - email
+        provider:
+          pingfed:
+            authorization-uri: "${PINGFED_AUTHORIZATION_URI}"
+            token-uri: "${PINGFED_TOKEN_URI}"
+            user-info-uri: "${PINGFED_USER_INFO_URI}"
+            user-name-attribute: "${PINGFED_USERNAME_ATTRIBUTE:sub}"
+
+server:
+  ssl:
+    client-auth: want
+  servlet:
+    session:
+      cookie:
+        secure: true
+
+panel:
+  security:
+    h2-console-enabled: false
+    application-clients:
+      - name: "${GRAFANA_CLIENT_NAME:grafana}"
+        certificate-cn: "${GRAFANA_CERT_CN}"
+        authorities:
+          - ROLE_APP_GRAFANA
+        claims:
+          environment: prod
+    entitlements:
+      environment: "${PANEL_SECURITY_ENVIRONMENT:prod}"
