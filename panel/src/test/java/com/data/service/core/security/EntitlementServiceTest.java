@@ -1,36 +1,48 @@
 package com.data.service.core.security;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.test.context.ConfigDataApplicationContextInitializer;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@SpringJUnitConfig(classes = EntitlementServiceTest.PropertiesConfiguration.class,
+        initializers = ConfigDataApplicationContextInitializer.class)
+@ActiveProfiles("test")
 class EntitlementServiceTest {
+
+    @Autowired
+    private PanelSecurityProperties securityProperties;
 
     @Test
     void normalizedGroupAuthorityGrantsMatchingEntityReadAccess() {
-        EntitlementService service = entitlementService("qa");
-        Authentication authentication = authentication("GROUP_ACL_SERVICE_QA_TRADES_READER");
+        EntitlementService service = entitlementService();
+        Authentication authentication = authentication("GROUP_ACL_SERVICE_TEST_TRADES_READER");
 
         assertThat(service.canAccess(authentication, "trades", "read")).isTrue();
     }
 
     @Test
     void configuredEntityGroupGrantsMappedRouteEntityReadAccess() {
-        EntitlementService service = entitlementService("qa");
+        EntitlementService service = entitlementService();
         OAuth2User principal = new DefaultOAuth2User(
                 List.of(),
                 Map.of(
                         "sub", "user-123",
-                        "groups", List.of("acl_service_qa_crypto_assets_reader")
+                        "groups", List.of("acl_service_test_crypto_assets_reader")
                 ),
                 "sub"
         );
@@ -45,15 +57,15 @@ class EntitlementServiceTest {
 
     @Test
     void unconfiguredEntityFallsBackToRouteEntityName() {
-        EntitlementService service = entitlementService("qa");
-        Authentication authentication = authentication("GROUP_ACL_SERVICE_QA_REPORTS_READER");
+        EntitlementService service = entitlementService();
+        Authentication authentication = authentication("GROUP_ACL_SERVICE_TEST_REPORTS_READER");
 
         assertThat(service.canAccess(authentication, "reports", "read")).isTrue();
     }
 
     @Test
     void environmentMismatchDeniesAccess() {
-        EntitlementService service = entitlementService("qa");
+        EntitlementService service = entitlementService();
         Authentication authentication = authentication("GROUP_ACL_SERVICE_PROD_TRADES_READER");
 
         assertThat(service.canAccess(authentication, "trades", "read")).isFalse();
@@ -61,16 +73,16 @@ class EntitlementServiceTest {
 
     @Test
     void entityMismatchDeniesAccess() {
-        EntitlementService service = entitlementService("qa");
-        Authentication authentication = authentication("GROUP_ACL_SERVICE_QA_CRYPTOASSETS_READER");
+        EntitlementService service = entitlementService();
+        Authentication authentication = authentication("GROUP_ACL_SERVICE_TEST_CRYPTOASSETS_READER");
 
         assertThat(service.canAccess(authentication, "trades", "read")).isFalse();
     }
 
     @Test
     void writerRoleGrantsReadAndWriteButNotDelete() {
-        EntitlementService service = entitlementService("qa");
-        Authentication authentication = authentication("GROUP_ACL_SERVICE_QA_TRADES_WRITER");
+        EntitlementService service = entitlementService();
+        Authentication authentication = authentication("GROUP_ACL_SERVICE_TEST_TRADES_WRITER");
 
         assertThat(service.canAccess(authentication, "trades", "read")).isTrue();
         assertThat(service.canAccess(authentication, "trades", "write")).isTrue();
@@ -79,11 +91,11 @@ class EntitlementServiceTest {
 
     @Test
     void applicationClientKeepsGrafanaEntityAccessWorking() {
-        EntitlementService service = entitlementService("qa");
+        EntitlementService service = entitlementService();
         ApplicationClientPrincipal principal = new ApplicationClientPrincipal(
                 "grafana",
                 "grafana-test",
-                Map.of("environment", "qa"),
+                Map.of("environment", "test"),
                 List.of(new SimpleGrantedAuthority("ROLE_APP_GRAFANA"))
         );
         Authentication authentication = new TestingAuthenticationToken(
@@ -104,27 +116,16 @@ class EntitlementServiceTest {
         assertThat(service.canAccess(null, "trades", "read")).isTrue();
     }
 
-    private EntitlementService entitlementService(String environment) {
-        PanelSecurityProperties securityProperties = new PanelSecurityProperties();
-        configureEntitlements(securityProperties.getEntitlements(), environment);
+    private EntitlementService entitlementService() {
         return new EntitlementService(securityProperties);
-    }
-
-    private void configureEntitlements(PanelSecurityProperties.Entitlements entitlements, String environment) {
-        entitlements.setEnvironment(environment);
-        entitlements.setGroupPrefix("acl_service");
-        entitlements.getEntityGroups().put("trades", "trades");
-        entitlements.getEntityGroups().put("cryptoassets", "crypto_assets");
-        entitlements.getRoleActions().put("reader", List.of("read"));
-        entitlements.getRoleActions().put("writer", List.of("read", "write"));
-        entitlements.getRoleActions().put("editor", List.of("read", "write"));
-        entitlements.getRoleActions().put("exporter", List.of("export"));
-        entitlements.getRoleActions().put("deleter", List.of("delete"));
-        entitlements.getRoleActions().put("admin", List.of("read", "write", "delete", "export"));
-        entitlements.getRoleActions().put("owner", List.of("read", "write", "delete", "export"));
     }
 
     private Authentication authentication(String authority) {
         return new TestingAuthenticationToken("alice", "", authority);
+    }
+
+    @Configuration(proxyBeanMethods = false)
+    @EnableConfigurationProperties(PanelSecurityProperties.class)
+    static class PropertiesConfiguration {
     }
 }
