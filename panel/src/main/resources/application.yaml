@@ -42,9 +42,3 @@ panel:
       entitlements-claim: entitlements
       permissions-claim: permissions
       data-scopes-claim: data_scopes
-    entitlements:
-      environment: "${PANEL_SECURITY_ENVIRONMENT:local}"
-      group-prefix: acl_service
-      entity-groups:
-        trades: trades
-        cryptoassets: crypto_assets

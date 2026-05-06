@@ -106,8 +106,22 @@ class EntitlementServiceTest {
 
     private EntitlementService entitlementService(String environment) {
         PanelSecurityProperties securityProperties = new PanelSecurityProperties();
-        securityProperties.getEntitlements().setEnvironment(environment);
+        configureEntitlements(securityProperties.getEntitlements(), environment);
         return new EntitlementService(securityProperties);
+    }
+
+    private void configureEntitlements(PanelSecurityProperties.Entitlements entitlements, String environment) {
+        entitlements.setEnvironment(environment);
+        entitlements.setGroupPrefix("acl_service");
+        entitlements.getEntityGroups().put("trades", "trades");
+        entitlements.getEntityGroups().put("cryptoassets", "crypto_assets");
+        entitlements.getRoleActions().put("reader", List.of("read"));
+        entitlements.getRoleActions().put("writer", List.of("read", "write"));
+        entitlements.getRoleActions().put("editor", List.of("read", "write"));
+        entitlements.getRoleActions().put("exporter", List.of("export"));
+        entitlements.getRoleActions().put("deleter", List.of("delete"));
+        entitlements.getRoleActions().put("admin", List.of("read", "write", "delete", "export"));
+        entitlements.getRoleActions().put("owner", List.of("read", "write", "delete", "export"));
     }
 
     private Authentication authentication(String authority) {

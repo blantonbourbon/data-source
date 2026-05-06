@@ -42,3 +42,30 @@ panel:
           environment: prod
     entitlements:
       environment: "${PANEL_SECURITY_ENVIRONMENT:prod}"
+      group-prefix: acl_service
+      entity-groups:
+        trades: trades
+        cryptoassets: crypto_assets
+      role-actions:
+        reader:
+          - read
+        writer:
+          - read
+          - write
+        editor:
+          - read
+          - write
+        exporter:
+          - export
+        deleter:
+          - delete
+        admin:
+          - read
+          - write
+          - delete
+          - export
+        owner:
+          - read
+          - write
+          - delete
+          - export

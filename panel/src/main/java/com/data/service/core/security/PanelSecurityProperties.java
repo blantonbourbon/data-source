@@ -193,23 +193,10 @@ public class PanelSecurityProperties {
     }
 
     public static class Entitlements {
-        private String environment = "local";
-        private String groupPrefix = "acl_service";
+        private String environment;
+        private String groupPrefix;
         private final Map<String, String> entityGroups = new LinkedHashMap<>();
         private final Map<String, List<String>> roleActions = new LinkedHashMap<>();
-
-        public Entitlements() {
-            entityGroups.put("trades", "trades");
-            entityGroups.put("cryptoassets", "crypto_assets");
-
-            roleActions.put("reader", List.of("read"));
-            roleActions.put("writer", List.of("read", "write"));
-            roleActions.put("editor", List.of("read", "write"));
-            roleActions.put("exporter", List.of("export"));
-            roleActions.put("deleter", List.of("delete"));
-            roleActions.put("admin", List.of("read", "write", "delete", "export"));
-            roleActions.put("owner", List.of("read", "write", "delete", "export"));
-        }
 
         public String getEnvironment() {
             return environment;
